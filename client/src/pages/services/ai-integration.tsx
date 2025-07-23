@@ -9,16 +9,36 @@ export default function AIIntegration() {
   const technologies = [
     { name: "OpenAI GPT", category: "LLM" },
     { name: "Claude", category: "LLM" },
+    { name: "Gemini", category: "LLM" },
+    { name: "Llama", category: "LLM" },
     { name: "LangChain", category: "Framework" },
+    { name: "LlamaIndex", category: "Framework" },
+    { name: "AutoGen", category: "Framework" },
+    { name: "CrewAI", category: "Framework" },
     { name: "TensorFlow", category: "ML" },
     { name: "PyTorch", category: "ML" },
+    { name: "Scikit-learn", category: "ML" },
+    { name: "XGBoost", category: "ML" },
     { name: "Hugging Face", category: "Models" },
+    { name: "Ollama", category: "Models" },
     { name: "Python", category: "Language" },
+    { name: "R", category: "Language" },
+    { name: "Julia", category: "Language" },
     { name: "FastAPI", category: "Backend" },
+    { name: "Flask", category: "Backend" },
+    { name: "Django", category: "Backend" },
     { name: "Streamlit", category: "UI" },
+    { name: "Gradio", category: "UI" },
+    { name: "Jupyter", category: "Development" },
     { name: "Docker", category: "Deployment" },
+    { name: "Kubernetes", category: "Deployment" },
     { name: "AWS SageMaker", category: "Cloud" },
-    { name: "Vector Databases", category: "Storage" }
+    { name: "Google Vertex AI", category: "Cloud" },
+    { name: "Azure ML", category: "Cloud" },
+    { name: "Pinecone", category: "Vector DB" },
+    { name: "Weaviate", category: "Vector DB" },
+    { name: "Chroma", category: "Vector DB" },
+    { name: "FAISS", category: "Vector DB" }
   ];
 
   const services = [
@@ -175,7 +195,7 @@ export default function AIIntegration() {
               AI Technologies & Tools
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              We leverage the most advanced AI technologies and frameworks
+              We select the optimal AI tools and frameworks based on your use case, data requirements, and business objectives
             </p>
           </div>
 

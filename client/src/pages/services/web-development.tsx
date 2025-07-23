@@ -8,17 +8,41 @@ import ContactForm from "@/components/forms/contact-form";
 export default function WebDevelopment() {
   const technologies = [
     { name: "React.js", category: "Frontend" },
+    { name: "Vue.js", category: "Frontend" },
+    { name: "Angular", category: "Frontend" },
+    { name: "Svelte", category: "Frontend" },
     { name: "Next.js", category: "Framework" },
+    { name: "Nuxt.js", category: "Framework" },
+    { name: "SvelteKit", category: "Framework" },
+    { name: "Gatsby", category: "Framework" },
     { name: "TypeScript", category: "Language" },
+    { name: "JavaScript", category: "Language" },
+    { name: "Python", category: "Language" },
+    { name: "PHP", category: "Language" },
     { name: "Tailwind CSS", category: "Styling" },
+    { name: "Bootstrap", category: "Styling" },
+    { name: "Sass/SCSS", category: "Styling" },
+    { name: "Material-UI", category: "Styling" },
     { name: "Node.js", category: "Backend" },
     { name: "Express.js", category: "Backend" },
+    { name: "Django", category: "Backend" },
+    { name: "FastAPI", category: "Backend" },
+    { name: "Laravel", category: "Backend" },
+    { name: "Spring Boot", category: "Backend" },
     { name: "PostgreSQL", category: "Database" },
     { name: "MongoDB", category: "Database" },
+    { name: "MySQL", category: "Database" },
+    { name: "Redis", category: "Database" },
     { name: "AWS", category: "Cloud" },
+    { name: "Google Cloud", category: "Cloud" },
+    { name: "Azure", category: "Cloud" },
     { name: "Vercel", category: "Deployment" },
+    { name: "Netlify", category: "Deployment" },
+    { name: "Heroku", category: "Deployment" },
     { name: "Docker", category: "DevOps" },
-    { name: "Git", category: "Version Control" }
+    { name: "Kubernetes", category: "DevOps" },
+    { name: "Git", category: "Version Control" },
+    { name: "GitHub Actions", category: "CI/CD" }
   ];
 
   const services = [
@@ -154,7 +178,7 @@ export default function WebDevelopment() {
               Technologies We Use
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              We leverage cutting-edge technologies to build robust, scalable applications
+              We choose the best technology stack for each project based on your specific requirements and goals
             </p>
           </div>
 

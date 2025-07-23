@@ -9,16 +9,35 @@ export default function BusinessAutomation() {
   const technologies = [
     { name: "Zapier", category: "Automation" },
     { name: "Microsoft Power Automate", category: "Automation" },
+    { name: "Make (Integromat)", category: "Automation" },
+    { name: "n8n", category: "Automation" },
+    { name: "UiPath", category: "RPA" },
+    { name: "Blue Prism", category: "RPA" },
     { name: "Salesforce", category: "CRM" },
     { name: "HubSpot", category: "CRM" },
+    { name: "Pipedrive", category: "CRM" },
+    { name: "Zoho CRM", category: "CRM" },
     { name: "Slack", category: "Communication" },
     { name: "Microsoft Teams", category: "Communication" },
+    { name: "Discord", category: "Communication" },
     { name: "Google Workspace", category: "Productivity" },
+    { name: "Microsoft 365", category: "Productivity" },
     { name: "Notion", category: "Documentation" },
+    { name: "Confluence", category: "Documentation" },
     { name: "Airtable", category: "Database" },
     { name: "Monday.com", category: "Project Management" },
+    { name: "Asana", category: "Project Management" },
+    { name: "Trello", category: "Project Management" },
+    { name: "Jira", category: "Project Management" },
     { name: "REST APIs", category: "Integration" },
-    { name: "Webhooks", category: "Integration" }
+    { name: "GraphQL", category: "Integration" },
+    { name: "Webhooks", category: "Integration" },
+    { name: "Apache Kafka", category: "Integration" },
+    { name: "MuleSoft", category: "Integration" },
+    { name: "Tableau", category: "Analytics" },
+    { name: "Power BI", category: "Analytics" },
+    { name: "Google Analytics", category: "Analytics" },
+    { name: "Mixpanel", category: "Analytics" }
   ];
 
   const services = [
@@ -237,7 +256,7 @@ export default function BusinessAutomation() {
               Automation Tools & Platforms
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              We work with industry-leading automation platforms and tools
+              We evaluate and implement the automation tools that best fit your existing workflow and business requirements
             </p>
           </div>
 
