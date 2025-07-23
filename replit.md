@@ -27,11 +27,11 @@ Preferred communication style: Simple, everyday language.
 - **Error Handling**: Centralized error handling with proper HTTP status codes
 
 ### Data Storage Solutions
-- **Database**: PostgreSQL (configured for Neon serverless)
+- **Database**: PostgreSQL (configured and active)
 - **ORM**: Drizzle ORM with drizzle-kit for migrations
 - **Schema**: Centralized schema definitions in shared directory
 - **Validation**: Zod schemas for runtime validation
-- **Fallback**: In-memory storage implementation for development
+- **Storage**: DatabaseStorage class using PostgreSQL for all data persistence
 
 ## Key Components
 
@@ -129,5 +129,13 @@ Preferred communication style: Simple, everyday language.
 - Static assets served from Express in production
 - Environment-specific plugin loading for Replit integration
 - Error boundary and logging for production debugging
+
+## Recent Updates
+
+### Database Migration (January 2025)
+- Migrated from in-memory storage to PostgreSQL database
+- Created database connection using Neon serverless PostgreSQL
+- Updated storage layer to use DatabaseStorage with full CRUD operations
+- All data now persists permanently in database tables
 
 The application follows a monorepo structure with clear separation between client, server, and shared code, making it maintainable and scalable for future enhancements.

@@ -3,6 +3,8 @@ import {
   type Contact, type Enrollment, type User, type BlogPost, type DynamicForm, type FormSubmission,
   type InsertContact, type InsertEnrollment, type InsertUser, type InsertBlogPost, type InsertDynamicForm, type InsertFormSubmission 
 } from "@shared/schema";
+import { db } from "./db";
+import { eq, desc } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
@@ -233,4 +235,141 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export class DatabaseStorage implements IStorage {
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(insertUser)
+      .returning();
+    return user;
+  }
+
+  async createContact(insertContact: InsertContact): Promise<Contact> {
+    const [contact] = await db
+      .insert(contacts)
+      .values(insertContact)
+      .returning();
+    return contact;
+  }
+
+  async getContacts(): Promise<Contact[]> {
+    return await db.select().from(contacts).orderBy(desc(contacts.createdAt));
+  }
+
+  async createEnrollment(insertEnrollment: InsertEnrollment): Promise<Enrollment> {
+    const [enrollment] = await db
+      .insert(enrollments)
+      .values(insertEnrollment)
+      .returning();
+    return enrollment;
+  }
+
+  async getEnrollments(): Promise<Enrollment[]> {
+    return await db.select().from(enrollments).orderBy(desc(enrollments.createdAt));
+  }
+
+  // Blog Posts
+  async createBlogPost(insertBlogPost: InsertBlogPost): Promise<BlogPost> {
+    const [blogPost] = await db
+      .insert(blogPosts)
+      .values(insertBlogPost)
+      .returning();
+    return blogPost;
+  }
+
+  async getBlogPosts(published?: boolean): Promise<BlogPost[]> {
+    let query = db.select().from(blogPosts);
+    
+    if (published !== undefined) {
+      query = query.where(eq(blogPosts.published, published ? 1 : 0));
+    }
+    
+    return await query.orderBy(desc(blogPosts.createdAt));
+  }
+
+  async getBlogPost(id: number): Promise<BlogPost | undefined> {
+    const [blogPost] = await db.select().from(blogPosts).where(eq(blogPosts.id, id));
+    return blogPost || undefined;
+  }
+
+  async updateBlogPost(id: number, updateData: Partial<InsertBlogPost>): Promise<BlogPost> {
+    const [blogPost] = await db
+      .update(blogPosts)
+      .set({ ...updateData, updatedAt: new Date() })
+      .where(eq(blogPosts.id, id))
+      .returning();
+    return blogPost;
+  }
+
+  async deleteBlogPost(id: number): Promise<void> {
+    await db.delete(blogPosts).where(eq(blogPosts.id, id));
+  }
+
+  // Dynamic Forms
+  async createDynamicForm(insertForm: InsertDynamicForm): Promise<DynamicForm> {
+    const [form] = await db
+      .insert(dynamicForms)
+      .values(insertForm)
+      .returning();
+    return form;
+  }
+
+  async getDynamicForms(active?: boolean): Promise<DynamicForm[]> {
+    let query = db.select().from(dynamicForms);
+    
+    if (active !== undefined) {
+      query = query.where(eq(dynamicForms.active, active ? 1 : 0));
+    }
+    
+    return await query.orderBy(desc(dynamicForms.createdAt));
+  }
+
+  async getDynamicForm(id: number): Promise<DynamicForm | undefined> {
+    const [form] = await db.select().from(dynamicForms).where(eq(dynamicForms.id, id));
+    return form || undefined;
+  }
+
+  async updateDynamicForm(id: number, updateData: Partial<InsertDynamicForm>): Promise<DynamicForm> {
+    const [form] = await db
+      .update(dynamicForms)
+      .set({ ...updateData, updatedAt: new Date() })
+      .where(eq(dynamicForms.id, id))
+      .returning();
+    return form;
+  }
+
+  async deleteDynamicForm(id: number): Promise<void> {
+    await db.delete(dynamicForms).where(eq(dynamicForms.id, id));
+  }
+
+  // Form Submissions
+  async createFormSubmission(insertSubmission: InsertFormSubmission): Promise<FormSubmission> {
+    const [submission] = await db
+      .insert(formSubmissions)
+      .values(insertSubmission)
+      .returning();
+    return submission;
+  }
+
+  async getFormSubmissions(formId?: number): Promise<FormSubmission[]> {
+    let query = db.select().from(formSubmissions);
+    
+    if (formId !== undefined) {
+      query = query.where(eq(formSubmissions.formId, formId));
+    }
+    
+    return await query.orderBy(desc(formSubmissions.createdAt));
+  }
+}
+
+export const storage = new DatabaseStorage();
