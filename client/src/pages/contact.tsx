@@ -7,7 +7,7 @@ export default function Contact() {
     {
       icon: <Mail className="h-6 w-6 text-primary" />,
       title: "Email Us",
-      details: ["technature3@gmail.com", "aderibigbeolamide56@gmail.com"]
+      details: ["technurture619@gmail.com", "support@technurture.com"]
     },
     {
       icon: <Phone className="h-6 w-6 text-accent" />,

@@ -77,7 +77,12 @@ export class MemStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.currentUserId++;
-    const user: User = { ...insertUser, id };
+    const user: User = { 
+      ...insertUser, 
+      id, 
+      role: "user",
+      createdAt: new Date()
+    };
     this.users.set(id, user);
     return user;
   }
@@ -288,13 +293,13 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getBlogPosts(published?: boolean): Promise<BlogPost[]> {
-    let query = db.select().from(blogPosts);
-    
     if (published !== undefined) {
-      query = query.where(eq(blogPosts.published, published ? 1 : 0));
+      return await db.select().from(blogPosts)
+        .where(eq(blogPosts.published, published ? 1 : 0))
+        .orderBy(desc(blogPosts.createdAt));
     }
     
-    return await query.orderBy(desc(blogPosts.createdAt));
+    return await db.select().from(blogPosts).orderBy(desc(blogPosts.createdAt));
   }
 
   async getBlogPost(id: number): Promise<BlogPost | undefined> {
@@ -325,13 +330,13 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getDynamicForms(active?: boolean): Promise<DynamicForm[]> {
-    let query = db.select().from(dynamicForms);
-    
     if (active !== undefined) {
-      query = query.where(eq(dynamicForms.active, active ? 1 : 0));
+      return await db.select().from(dynamicForms)
+        .where(eq(dynamicForms.active, active ? 1 : 0))
+        .orderBy(desc(dynamicForms.createdAt));
     }
     
-    return await query.orderBy(desc(dynamicForms.createdAt));
+    return await db.select().from(dynamicForms).orderBy(desc(dynamicForms.createdAt));
   }
 
   async getDynamicForm(id: number): Promise<DynamicForm | undefined> {
@@ -362,13 +367,13 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getFormSubmissions(formId?: number): Promise<FormSubmission[]> {
-    let query = db.select().from(formSubmissions);
-    
     if (formId !== undefined) {
-      query = query.where(eq(formSubmissions.formId, formId));
+      return await db.select().from(formSubmissions)
+        .where(eq(formSubmissions.formId, formId))
+        .orderBy(desc(formSubmissions.createdAt));
     }
     
-    return await query.orderBy(desc(formSubmissions.createdAt));
+    return await db.select().from(formSubmissions).orderBy(desc(formSubmissions.createdAt));
   }
 }
 

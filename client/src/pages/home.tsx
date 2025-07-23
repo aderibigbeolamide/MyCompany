@@ -150,9 +150,11 @@ export default function Home() {
                       </li>
                     ))}
                   </ul>
-                  <button className="text-primary hover:text-blue-700 font-semibold group-hover:underline transition-all duration-200 flex items-center">
-                    Learn More <ArrowRight className="ml-1 h-4 w-4" />
-                  </button>
+                  <Link href={`/services/${service.title.toLowerCase().replace(/\s+/g, '-')}`}>
+                    <button className="text-primary hover:text-blue-700 font-semibold group-hover:underline transition-all duration-200 flex items-center">
+                      Learn More <ArrowRight className="ml-1 h-4 w-4" />
+                    </button>
+                  </Link>
                 </CardContent>
               </Card>
             ))}

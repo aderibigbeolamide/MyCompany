@@ -1,10 +1,123 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertContactSchema, insertEnrollmentSchema, insertBlogPostSchema, insertDynamicFormSchema, insertFormSubmissionSchema } from "@shared/schema";
+import { insertContactSchema, insertEnrollmentSchema, insertBlogPostSchema, insertDynamicFormSchema, insertFormSubmissionSchema, insertUserSchema } from "@shared/schema";
 import { z } from "zod";
+import bcrypt from "bcrypt";
+import session from "express-session";
+import { MemoryStore } from "express-session";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Configure session middleware
+  app.use(session({
+    secret: process.env.SESSION_SECRET || 'your-secret-key-change-in-production',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    }
+  }));
+
+  // Middleware to check if user is authenticated
+  const requireAuth = (req: any, res: any, next: any) => {
+    if ((req.session as any)?.user) {
+      next();
+    } else {
+      res.status(401).json({ success: false, message: "Authentication required" });
+    }
+  };
+
+  // Middleware to check if user is admin
+  const requireAdmin = (req: any, res: any, next: any) => {
+    if ((req.session as any)?.user?.role === 'admin') {
+      next();
+    } else {
+      res.status(403).json({ success: false, message: "Admin access required" });
+    }
+  };
+
+  // Authentication routes
+  app.post("/api/auth/register", async (req, res) => {
+    try {
+      const { username, password } = insertUserSchema.parse(req.body);
+      
+      // Check if user already exists
+      const existingUser = await storage.getUserByUsername(username);
+      if (existingUser) {
+        res.status(400).json({ success: false, message: "Username already exists" });
+        return;
+      }
+
+      // Hash password
+      const hashedPassword = await bcrypt.hash(password, 10);
+      
+      // Create user
+      const user = await storage.createUser({ username, password: hashedPassword });
+      
+      // Remove password from response
+      const { password: _, ...userWithoutPassword } = user;
+      res.json({ success: true, user: userWithoutPassword });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ success: false, errors: error.errors });
+      } else {
+        res.status(500).json({ success: false, message: "Internal server error" });
+      }
+    }
+  });
+
+  app.post("/api/auth/login", async (req, res) => {
+    try {
+      const { username, password } = insertUserSchema.parse(req.body);
+      
+      // Find user
+      const user = await storage.getUserByUsername(username);
+      if (!user) {
+        res.status(401).json({ success: false, message: "Invalid credentials" });
+        return;
+      }
+
+      // Check password
+      const isValidPassword = await bcrypt.compare(password, user.password);
+      if (!isValidPassword) {
+        res.status(401).json({ success: false, message: "Invalid credentials" });
+        return;
+      }
+
+      // Store user in session
+      (req.session as any).user = user;
+      
+      // Remove password from response
+      const { password: _, ...userWithoutPassword } = user;
+      res.json({ success: true, user: userWithoutPassword });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ success: false, errors: error.errors });
+      } else {
+        res.status(500).json({ success: false, message: "Internal server error" });
+      }
+    }
+  });
+
+  app.post("/api/auth/logout", (req, res) => {
+    req.session.destroy((err) => {
+      if (err) {
+        res.status(500).json({ success: false, message: "Failed to logout" });
+      } else {
+        res.json({ success: true, message: "Logged out successfully" });
+      }
+    });
+  });
+
+  app.get("/api/auth/me", (req: any, res) => {
+    if ((req.session as any)?.user) {
+      const { password: _, ...userWithoutPassword } = (req.session as any).user;
+      res.json({ success: true, user: userWithoutPassword });
+    } else {
+      res.status(401).json({ success: false, message: "Not authenticated" });
+    }
+  });
   // Contact form submission
   app.post("/api/contact", async (req, res) => {
     try {
@@ -21,7 +134,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get all contacts (for admin purposes)
-  app.get("/api/contacts", async (req, res) => {
+  app.get("/api/contacts", requireAdmin, async (req, res) => {
     try {
       const contacts = await storage.getContacts();
       res.json(contacts);
@@ -46,7 +159,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get all enrollments (for admin purposes)
-  app.get("/api/enrollments", async (req, res) => {
+  app.get("/api/enrollments", requireAdmin, async (req, res) => {
     try {
       const enrollments = await storage.getEnrollments();
       res.json(enrollments);
@@ -56,7 +169,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Blog Posts Routes
-  app.post("/api/blog", async (req, res) => {
+  app.post("/api/blog", requireAdmin, async (req, res) => {
     try {
       const blogData = insertBlogPostSchema.parse(req.body);
       const blogPost = await storage.createBlogPost(blogData);
@@ -94,7 +207,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/blog/:id", async (req, res) => {
+  app.put("/api/blog/:id", requireAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const updateData = insertBlogPostSchema.partial().parse(req.body);
@@ -109,7 +222,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/blog/:id", async (req, res) => {
+  app.delete("/api/blog/:id", requireAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       await storage.deleteBlogPost(id);
@@ -120,7 +233,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Dynamic Forms Routes
-  app.post("/api/forms", async (req, res) => {
+  app.post("/api/forms", requireAdmin, async (req, res) => {
     try {
       const formData = insertDynamicFormSchema.parse(req.body);
       const form = await storage.createDynamicForm(formData);
@@ -158,7 +271,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/forms/:id", async (req, res) => {
+  app.put("/api/forms/:id", requireAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const updateData = insertDynamicFormSchema.partial().parse(req.body);
@@ -173,7 +286,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/forms/:id", async (req, res) => {
+  app.delete("/api/forms/:id", requireAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       await storage.deleteDynamicForm(id);
@@ -198,7 +311,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/submissions", async (req, res) => {
+  app.get("/api/submissions", requireAdmin, async (req, res) => {
     try {
       const formId = req.query.formId ? parseInt(req.query.formId as string) : undefined;
       const submissions = await storage.getFormSubmissions(formId);

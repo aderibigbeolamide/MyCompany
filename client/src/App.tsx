@@ -18,12 +18,17 @@ import AdminBlog from "@/pages/admin/blog";
 import BlogEditor from "@/pages/admin/blog-editor";
 import AdminForms from "@/pages/admin/forms";
 import FormBuilder from "@/pages/admin/form-builder";
+import AdminLogin from "@/pages/admin/login";
+import WebDevelopment from "@/pages/services/web-development";
+import AIIntegration from "@/pages/services/ai-integration";
+import BusinessAutomation from "@/pages/services/business-automation";
 
 function Router() {
   return (
     <div className="min-h-screen flex flex-col">
       <Switch>
         {/* Admin Routes (without navbar/footer) */}
+        <Route path="/admin/login" component={AdminLogin} />
         <Route path="/admin/dashboard" component={AdminDashboard} />
         <Route path="/admin/blog" component={AdminBlog} />
         <Route path="/admin/blog/new" component={BlogEditor} />
@@ -93,6 +98,39 @@ function Router() {
             <WhatsAppButton />
           </>
         </Route>
+        
+        {/* Service Detail Pages */}
+        <Route path="/services/web-development">
+          <>
+            <Navbar />
+            <main className="flex-1">
+              <WebDevelopment />
+            </main>
+            <Footer />
+            <WhatsAppButton />
+          </>
+        </Route>
+        <Route path="/services/ai-integration">
+          <>
+            <Navbar />
+            <main className="flex-1">
+              <AIIntegration />
+            </main>
+            <Footer />
+            <WhatsAppButton />
+          </>
+        </Route>
+        <Route path="/services/business-automation">
+          <>
+            <Navbar />
+            <main className="flex-1">
+              <BusinessAutomation />
+            </main>
+            <Footer />
+            <WhatsAppButton />
+          </>
+        </Route>
+        
         <Route component={NotFound} />
       </Switch>
     </div>
