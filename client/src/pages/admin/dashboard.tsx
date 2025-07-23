@@ -1,9 +1,23 @@
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { PenTool, FileText, Users, BarChart3, Settings, Plus } from "lucide-react";
+import { PenTool, FileText, Users, BarChart3, Settings, Plus, LogOut } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
+import { useEffect } from "react";
 
 export default function AdminDashboard() {
+  const { isAuthenticated, isAdmin, logout } = useAuth();
+
+  useEffect(() => {
+    if (!isAuthenticated || !isAdmin) {
+      window.location.href = '/admin/login';
+    }
+  }, [isAuthenticated, isAdmin]);
+
+  if (!isAuthenticated || !isAdmin) {
+    return <div>Loading...</div>;
+  }
+
   const stats = [
     { title: "Total Blog Posts", value: "12", icon: <FileText className="h-8 w-8 text-primary" />, color: "text-primary" },
     { title: "Form Submissions", value: "48", icon: <Users className="h-8 w-8 text-accent" />, color: "text-accent" },
@@ -28,9 +42,15 @@ export default function AdminDashboard() {
               <h1 className="text-3xl font-bold text-secondary font-space">Admin Dashboard</h1>
               <p className="text-gray-600 mt-1">Manage your TechNurture content and forms</p>
             </div>
-            <Link href="/">
-              <Button variant="outline">Back to Website</Button>
-            </Link>
+            <div className="flex space-x-2">
+              <Link href="/">
+                <Button variant="outline">Back to Website</Button>
+              </Link>
+              <Button variant="outline" onClick={logout}>
+                <LogOut className="h-4 w-4 mr-2" />
+                Logout
+              </Button>
+            </div>
           </div>
         </div>
       </div>

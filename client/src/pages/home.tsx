@@ -31,8 +31,8 @@ export default function Home() {
       <section className="min-h-screen flex items-center relative overflow-hidden">
         <div className="absolute inset-0 z-0">
           <img 
-            src="https://images.unsplash.com/photo-1497366216548-37526070297c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&h=1080" 
-            alt="Modern technology office" 
+            src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&h=1080" 
+            alt="Digital technology and data visualization" 
             className="w-full h-full object-cover" 
           />
           <div className="absolute inset-0 bg-gradient-to-r from-secondary/90 to-primary/80"></div>
