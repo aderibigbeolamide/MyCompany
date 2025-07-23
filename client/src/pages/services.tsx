@@ -16,7 +16,7 @@ export default function Services() {
         "Responsive Design",
         "Performance Optimization"
       ],
-      technologies: ["React", "Next.js", "Node.js", "TypeScript", "Tailwind CSS"]
+      technologies: ["React", "Next.js", "Node.js", "TypeScript", "Tailwind CSS", "Python", "C#", "NestJS"]
     },
     {
       icon: <Brain className="h-8 w-8 text-accent" />,
@@ -29,7 +29,7 @@ export default function Services() {
         "Machine Learning Models",
         "Natural Language Processing"
       ],
-      technologies: ["Python", "TensorFlow", "OpenAI", "LangChain", "Pandas"]
+      technologies: ["Python", "TensorFlow", "OpenAI", "LangChain", "Pandas", "Java", "C#", "R"]
     },
     {
       icon: <ServerCog className="h-8 w-8 text-secondary" />,
@@ -42,7 +42,7 @@ export default function Services() {
         "Report Generation",
         "Task Automation"
       ],
-      technologies: ["Zapier", "Power Automate", "Python", "REST APIs", "SQL"]
+      technologies: ["Zapier", "Power Automate", "Python", "REST APIs", "SQL", "C#", "Java", "NestJS"]
     },
     {
       icon: <Smartphone className="h-8 w-8 text-primary" />,
@@ -55,7 +55,7 @@ export default function Services() {
         "App Store Deployment",
         "Mobile UI/UX Design"
       ],
-      technologies: ["React Native", "Flutter", "Swift", "Kotlin", "Firebase"]
+      technologies: ["React Native", "Flutter", "Swift", "Kotlin", "Firebase", "Java", "C#", "Xamarin"]
     },
     {
       icon: <Database className="h-8 w-8 text-accent" />,

@@ -109,15 +109,15 @@ export default function Footer() {
             <ul className="space-y-2 text-gray-300">
               <li className="flex items-center">
                 <span className="mr-2">✉</span>
-                info@technurture.com
+                technature3@gmail.com
               </li>
               <li className="flex items-center">
                 <span className="mr-2">📞</span>
-                +1 (555) 123-4567
+                +234 810-7183-206
               </li>
               <li className="flex items-center">
                 <span className="mr-2">📍</span>
-                San Francisco, CA
+                Abuja, Nigeria
               </li>
             </ul>
           </div>

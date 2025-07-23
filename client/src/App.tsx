@@ -13,24 +13,88 @@ import Contact from "@/pages/contact";
 import Navbar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
 import WhatsAppButton from "@/components/ui/whatsapp-button";
+import AdminDashboard from "@/pages/admin/dashboard";
+import AdminBlog from "@/pages/admin/blog";
+import BlogEditor from "@/pages/admin/blog-editor";
+import AdminForms from "@/pages/admin/forms";
+import FormBuilder from "@/pages/admin/form-builder";
 
 function Router() {
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar />
-      <main className="flex-1">
-        <Switch>
-          <Route path="/" component={Home} />
-          <Route path="/about" component={About} />
-          <Route path="/services" component={Services} />
-          <Route path="/academy" component={Academy} />
-          <Route path="/blog" component={Blog} />
-          <Route path="/contact" component={Contact} />
-          <Route component={NotFound} />
-        </Switch>
-      </main>
-      <Footer />
-      <WhatsAppButton />
+      <Switch>
+        {/* Admin Routes (without navbar/footer) */}
+        <Route path="/admin/dashboard" component={AdminDashboard} />
+        <Route path="/admin/blog" component={AdminBlog} />
+        <Route path="/admin/blog/new" component={BlogEditor} />
+        <Route path="/admin/blog/edit/:id" component={BlogEditor} />
+        <Route path="/admin/forms" component={AdminForms} />
+        <Route path="/admin/forms/new" component={FormBuilder} />
+        <Route path="/admin/forms/edit/:id" component={FormBuilder} />
+        
+        {/* Public Routes (with navbar/footer) */}
+        <Route path="/">
+          <>
+            <Navbar />
+            <main className="flex-1">
+              <Home />
+            </main>
+            <Footer />
+            <WhatsAppButton />
+          </>
+        </Route>
+        <Route path="/about">
+          <>
+            <Navbar />
+            <main className="flex-1">
+              <About />
+            </main>
+            <Footer />
+            <WhatsAppButton />
+          </>
+        </Route>
+        <Route path="/services">
+          <>
+            <Navbar />
+            <main className="flex-1">
+              <Services />
+            </main>
+            <Footer />
+            <WhatsAppButton />
+          </>
+        </Route>
+        <Route path="/academy">
+          <>
+            <Navbar />
+            <main className="flex-1">
+              <Academy />
+            </main>
+            <Footer />
+            <WhatsAppButton />
+          </>
+        </Route>
+        <Route path="/blog">
+          <>
+            <Navbar />
+            <main className="flex-1">
+              <Blog />
+            </main>
+            <Footer />
+            <WhatsAppButton />
+          </>
+        </Route>
+        <Route path="/contact">
+          <>
+            <Navbar />
+            <main className="flex-1">
+              <Contact />
+            </main>
+            <Footer />
+            <WhatsAppButton />
+          </>
+        </Route>
+        <Route component={NotFound} />
+      </Switch>
     </div>
   );
 }

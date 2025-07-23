@@ -7,17 +7,17 @@ export default function Contact() {
     {
       icon: <Mail className="h-6 w-6 text-primary" />,
       title: "Email Us",
-      details: ["info@technurture.com", "academy@technurture.com"]
+      details: ["technature3@gmail.com", "aderibigbeolamide56@gmail.com"]
     },
     {
       icon: <Phone className="h-6 w-6 text-accent" />,
       title: "Call Us",
-      details: ["+1 (555) 123-4567", "+1 (555) 987-6543"]
+      details: ["+234 810-7183-206", "+234 815-1163-966"]
     },
     {
       icon: <MapPin className="h-6 w-6 text-secondary" />,
       title: "Visit Us",
-      details: ["123 Tech Street", "San Francisco, CA 94105"]
+      details: ["No. 2 Alheri Close", "FCT, Abuja Nigeria"]
     }
   ];
 
@@ -195,14 +195,14 @@ export default function Contact() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-secondary mb-4 font-space">Find Us</h2>
-            <p className="text-gray-600">Visit our office in the heart of San Francisco's tech district</p>
+            <p className="text-gray-600">Visit our office in Abuja, Nigeria</p>
           </div>
           
           <div className="bg-gray-200 rounded-2xl h-96 flex items-center justify-center">
             <div className="text-center">
               <MapPin className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <p className="text-gray-600">Interactive map would be integrated here</p>
-              <p className="text-sm text-gray-500 mt-2">123 Tech Street, San Francisco, CA 94105</p>
+              <p className="text-sm text-gray-500 mt-2">No. 2 Alheri Close, FCT, Abuja Nigeria</p>
             </div>
           </div>
         </div>

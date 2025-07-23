@@ -28,6 +28,41 @@ export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
+  role: varchar("role", { length: 50 }).default("user"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const blogPosts = pgTable("blog_posts", {
+  id: serial("id").primaryKey(),
+  title: varchar("title", { length: 500 }).notNull(),
+  content: text("content").notNull(),
+  excerpt: text("excerpt"),
+  category: varchar("category", { length: 100 }),
+  author: varchar("author", { length: 255 }).notNull(),
+  authorAvatar: varchar("author_avatar", { length: 500 }),
+  image: varchar("image", { length: 500 }),
+  readTime: varchar("read_time", { length: 50 }),
+  published: integer("published").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const dynamicForms = pgTable("dynamic_forms", {
+  id: serial("id").primaryKey(),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  type: varchar("type", { length: 50 }).notNull(), // course, hiring, event, etc.
+  fields: text("fields").notNull(), // JSON string of form fields
+  active: integer("active").default(1),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const formSubmissions = pgTable("form_submissions", {
+  id: serial("id").primaryKey(),
+  formId: integer("form_id").notNull(),
+  submissionData: text("submission_data").notNull(), // JSON string of submitted data
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const insertContactSchema = createInsertSchema(contacts).omit({
@@ -53,3 +88,29 @@ export type Enrollment = typeof enrollments.$inferSelect;
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
+
+export const insertBlogPostSchema = createInsertSchema(blogPosts).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertDynamicFormSchema = createInsertSchema(dynamicForms).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertFormSubmissionSchema = createInsertSchema(formSubmissions).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertBlogPost = z.infer<typeof insertBlogPostSchema>;
+export type BlogPost = typeof blogPosts.$inferSelect;
+
+export type InsertDynamicForm = z.infer<typeof insertDynamicFormSchema>;
+export type DynamicForm = typeof dynamicForms.$inferSelect;
+
+export type InsertFormSubmission = z.infer<typeof insertFormSubmissionSchema>;
+export type FormSubmission = typeof formSubmissions.$inferSelect;

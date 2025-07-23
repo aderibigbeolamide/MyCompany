@@ -1,4 +1,8 @@
-import { contacts, enrollments, users, type Contact, type Enrollment, type User, type InsertContact, type InsertEnrollment, type InsertUser } from "@shared/schema";
+import { 
+  contacts, enrollments, users, blogPosts, dynamicForms, formSubmissions,
+  type Contact, type Enrollment, type User, type BlogPost, type DynamicForm, type FormSubmission,
+  type InsertContact, type InsertEnrollment, type InsertUser, type InsertBlogPost, type InsertDynamicForm, type InsertFormSubmission 
+} from "@shared/schema";
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
@@ -10,23 +14,53 @@ export interface IStorage {
   
   createEnrollment(enrollment: InsertEnrollment): Promise<Enrollment>;
   getEnrollments(): Promise<Enrollment[]>;
+
+  // Blog Posts
+  createBlogPost(blogPost: InsertBlogPost): Promise<BlogPost>;
+  getBlogPosts(published?: boolean): Promise<BlogPost[]>;
+  getBlogPost(id: number): Promise<BlogPost | undefined>;
+  updateBlogPost(id: number, blogPost: Partial<InsertBlogPost>): Promise<BlogPost>;
+  deleteBlogPost(id: number): Promise<void>;
+
+  // Dynamic Forms
+  createDynamicForm(form: InsertDynamicForm): Promise<DynamicForm>;
+  getDynamicForms(active?: boolean): Promise<DynamicForm[]>;
+  getDynamicForm(id: number): Promise<DynamicForm | undefined>;
+  updateDynamicForm(id: number, form: Partial<InsertDynamicForm>): Promise<DynamicForm>;
+  deleteDynamicForm(id: number): Promise<void>;
+
+  // Form Submissions
+  createFormSubmission(submission: InsertFormSubmission): Promise<FormSubmission>;
+  getFormSubmissions(formId?: number): Promise<FormSubmission[]>;
 }
 
 export class MemStorage implements IStorage {
   private users: Map<number, User>;
   private contacts: Map<number, Contact>;
   private enrollments: Map<number, Enrollment>;
+  private blogPosts: Map<number, BlogPost>;
+  private dynamicForms: Map<number, DynamicForm>;
+  private formSubmissions: Map<number, FormSubmission>;
   private currentUserId: number;
   private currentContactId: number;
   private currentEnrollmentId: number;
+  private currentBlogPostId: number;
+  private currentDynamicFormId: number;
+  private currentFormSubmissionId: number;
 
   constructor() {
     this.users = new Map();
     this.contacts = new Map();
     this.enrollments = new Map();
+    this.blogPosts = new Map();
+    this.dynamicForms = new Map();
+    this.formSubmissions = new Map();
     this.currentUserId = 1;
     this.currentContactId = 1;
     this.currentEnrollmentId = 1;
+    this.currentBlogPostId = 1;
+    this.currentDynamicFormId = 1;
+    this.currentFormSubmissionId = 1;
   }
 
   async getUser(id: number): Promise<User | undefined> {
@@ -84,6 +118,118 @@ export class MemStorage implements IStorage {
     return Array.from(this.enrollments.values()).sort(
       (a, b) => b.createdAt!.getTime() - a.createdAt!.getTime()
     );
+  }
+
+  // Blog Posts
+  async createBlogPost(insertBlogPost: InsertBlogPost): Promise<BlogPost> {
+    const id = this.currentBlogPostId++;
+    const blogPost: BlogPost = {
+      ...insertBlogPost,
+      excerpt: insertBlogPost.excerpt || null,
+      category: insertBlogPost.category || null,
+      authorAvatar: insertBlogPost.authorAvatar || null,
+      image: insertBlogPost.image || null,
+      readTime: insertBlogPost.readTime || null,
+      published: insertBlogPost.published || null,
+      id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.blogPosts.set(id, blogPost);
+    return blogPost;
+  }
+
+  async getBlogPosts(published?: boolean): Promise<BlogPost[]> {
+    const posts = Array.from(this.blogPosts.values());
+    const filtered = published !== undefined 
+      ? posts.filter(post => published ? post.published === 1 : post.published === 0)
+      : posts;
+    return filtered.sort((a, b) => b.createdAt!.getTime() - a.createdAt!.getTime());
+  }
+
+  async getBlogPost(id: number): Promise<BlogPost | undefined> {
+    return this.blogPosts.get(id);
+  }
+
+  async updateBlogPost(id: number, updateData: Partial<InsertBlogPost>): Promise<BlogPost> {
+    const existing = this.blogPosts.get(id);
+    if (!existing) throw new Error('Blog post not found');
+    
+    const updated: BlogPost = {
+      ...existing,
+      ...updateData,
+      updatedAt: new Date(),
+    };
+    this.blogPosts.set(id, updated);
+    return updated;
+  }
+
+  async deleteBlogPost(id: number): Promise<void> {
+    this.blogPosts.delete(id);
+  }
+
+  // Dynamic Forms
+  async createDynamicForm(insertForm: InsertDynamicForm): Promise<DynamicForm> {
+    const id = this.currentDynamicFormId++;
+    const form: DynamicForm = {
+      ...insertForm,
+      description: insertForm.description || null,
+      active: insertForm.active || null,
+      id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.dynamicForms.set(id, form);
+    return form;
+  }
+
+  async getDynamicForms(active?: boolean): Promise<DynamicForm[]> {
+    const forms = Array.from(this.dynamicForms.values());
+    const filtered = active !== undefined 
+      ? forms.filter(form => active ? form.active === 1 : form.active === 0)
+      : forms;
+    return filtered.sort((a, b) => b.createdAt!.getTime() - a.createdAt!.getTime());
+  }
+
+  async getDynamicForm(id: number): Promise<DynamicForm | undefined> {
+    return this.dynamicForms.get(id);
+  }
+
+  async updateDynamicForm(id: number, updateData: Partial<InsertDynamicForm>): Promise<DynamicForm> {
+    const existing = this.dynamicForms.get(id);
+    if (!existing) throw new Error('Dynamic form not found');
+    
+    const updated: DynamicForm = {
+      ...existing,
+      ...updateData,
+      updatedAt: new Date(),
+    };
+    this.dynamicForms.set(id, updated);
+    return updated;
+  }
+
+  async deleteDynamicForm(id: number): Promise<void> {
+    this.dynamicForms.delete(id);
+  }
+
+  // Form Submissions
+  async createFormSubmission(insertSubmission: InsertFormSubmission): Promise<FormSubmission> {
+    const id = this.currentFormSubmissionId++;
+    const submission: FormSubmission = {
+      ...insertSubmission,
+      id,
+      createdAt: new Date(),
+    };
+    this.formSubmissions.set(id, submission);
+    return submission;
+  }
+
+  async getFormSubmissions(formId?: number): Promise<FormSubmission[]> {
+    const submissions = Array.from(this.formSubmissions.values());
+    const filtered = formId !== undefined 
+      ? submissions.filter(submission => submission.formId === formId)
+      : submissions;
+    return filtered.sort((a, b) => b.createdAt!.getTime() - a.createdAt!.getTime());
   }
 }
 

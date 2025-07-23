@@ -38,21 +38,38 @@ Preferred communication style: Simple, everyday language.
 ### Database Schema
 - **contacts**: Contact form submissions with service inquiries
 - **enrollments**: Academy enrollment applications with course preferences
-- **users**: User accounts (basic structure for future authentication)
+- **users**: User accounts with role-based access (admin/user)
+- **blogPosts**: Blog content management with publishing workflow
+- **dynamicForms**: Configurable forms for courses, hiring, events
+- **formSubmissions**: Tracking of all dynamic form submissions
 
 ### API Endpoints
 - `POST /api/contact` - Submit contact form
 - `GET /api/contacts` - Retrieve all contacts (admin)
 - `POST /api/enrollment` - Submit enrollment application
 - `GET /api/enrollments` - Retrieve all enrollments (admin)
+- `POST /api/blog` - Create blog post (admin)
+- `GET /api/blog` - Retrieve blog posts with optional published filter
+- `PUT /api/blog/:id` - Update blog post (admin)
+- `DELETE /api/blog/:id` - Delete blog post (admin)
+- `POST /api/forms` - Create dynamic form (admin)
+- `GET /api/forms` - Retrieve forms with optional active filter
+- `PUT /api/forms/:id` - Update dynamic form (admin)
+- `DELETE /api/forms/:id` - Delete dynamic form (admin)
+- `POST /api/forms/:id/submit` - Submit form response
+- `GET /api/submissions` - Retrieve form submissions (admin)
 
 ### Frontend Pages
 - **Home**: Hero section with service overview and call-to-actions
 - **About**: Company mission, vision, and values
-- **Services**: Detailed service offerings (web dev, AI, automation, mobile)
+- **Services**: Detailed service offerings (web dev, AI, automation, mobile) with expanded tech stacks
 - **Academy**: Training programs with enrollment functionality
-- **Blog**: Resources and articles (content-focused)
-- **Contact**: Contact information and inquiry form
+- **Blog**: Resources and articles with dynamic content from backend
+- **Contact**: Updated contact information (Abuja, Nigeria) and inquiry form
+- **Admin Dashboard**: Content management hub for blog and forms
+- **Admin Blog Management**: Create, edit, publish, and manage blog posts
+- **Admin Form Builder**: Dynamic form creation for courses, hiring, events
+- **Admin Submissions**: View and manage form submissions
 
 ### Shared Components
 - **UI Components**: Complete set of accessible components using Radix UI
