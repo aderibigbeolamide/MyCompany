@@ -58,9 +58,8 @@ export default function Home() {
               </Link>
               <Link href="/academy">
                 <Button 
-                  variant="outline" 
                   size="lg"
-                  className="border-2 border-white text-white hover:bg-white hover:text-secondary px-8 py-4 text-lg font-semibold transition-all duration-200"
+                  className="bg-white text-secondary hover:bg-gray-100 hover:text-primary px-8 py-4 text-lg font-semibold transition-all duration-200 transform hover:scale-105"
                 >
                   Join Academy
                 </Button>
