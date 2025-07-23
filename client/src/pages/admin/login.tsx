@@ -12,8 +12,8 @@ import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 
 const loginSchema = z.object({
-  username: z.string().min(1, "Username is required"),
-  password: z.string().min(1, "Password is required"),
+  username: z.string().min(1, "Username is required").transform(val => val.trim()),
+  password: z.string().min(1, "Password is required").transform(val => val.trim()),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
@@ -66,7 +66,12 @@ export default function AdminLogin() {
   });
 
   const onSubmit = (data: LoginFormValues) => {
-    loginMutation.mutate(data);
+    // Ensure data is trimmed before sending to server
+    const trimmedData = {
+      username: data.username.trim(),
+      password: data.password.trim()
+    };
+    loginMutation.mutate(trimmedData);
   };
 
   return (

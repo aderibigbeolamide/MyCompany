@@ -67,18 +67,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { username, password } = insertUserSchema.parse(req.body);
       
+      // Trim whitespace from inputs
+      const trimmedUsername = username.trim();
+      const trimmedPassword = password.trim();
+      
       // Check if user already exists
-      const existingUser = await storage.getUserByUsername(username);
+      const existingUser = await storage.getUserByUsername(trimmedUsername);
       if (existingUser) {
         res.status(400).json({ success: false, message: "Username already exists" });
         return;
       }
 
       // Hash password
-      const hashedPassword = await bcrypt.hash(password, 10);
+      const hashedPassword = await bcrypt.hash(trimmedPassword, 10);
       
       // Create user
-      const user = await storage.createUser({ username, password: hashedPassword });
+      const user = await storage.createUser({ username: trimmedUsername, password: hashedPassword });
       
       // Remove password from response
       const { password: _, ...userWithoutPassword } = user;
@@ -96,15 +100,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { username, password } = insertUserSchema.parse(req.body);
       
+      // Trim whitespace from inputs
+      const trimmedUsername = username.trim();
+      const trimmedPassword = password.trim();
+      
       // Find user
-      const user = await storage.getUserByUsername(username);
+      const user = await storage.getUserByUsername(trimmedUsername);
       if (!user) {
         res.status(401).json({ success: false, message: "Invalid credentials" });
         return;
       }
 
       // Check password
-      const isValidPassword = await bcrypt.compare(password, user.password);
+      const isValidPassword = await bcrypt.compare(trimmedPassword, user.password);
       if (!isValidPassword) {
         res.status(401).json({ success: false, message: "Invalid credentials" });
         return;
