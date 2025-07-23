@@ -6,8 +6,33 @@ import { z } from "zod";
 import bcrypt from "bcrypt";
 import session from "express-session";
 import { MemoryStore } from "express-session";
+import multer from "multer";
+import { v2 as cloudinary } from "cloudinary";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Configure Cloudinary
+  cloudinary.config({
+    cloud_name: 'dtrdllezw',
+    api_key: '598172739873685',
+    api_secret: 'c_mSuKLzQxlqDErCwLnNiIMhjGE'
+  });
+
+  // Configure multer for file uploads
+  const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: {
+      fileSize: 10 * 1024 * 1024, // 10MB limit
+    },
+    fileFilter: (req, file, cb) => {
+      // Allow images and videos
+      if (file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/')) {
+        cb(null, true);
+      } else {
+        cb(new Error('Only image and video files are allowed'));
+      }
+    }
+  });
+
   // Configure session middleware
   app.use(session({
     secret: process.env.SESSION_SECRET || 'your-secret-key-change-in-production',
@@ -165,6 +190,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(enrollments);
     } catch (error) {
       res.status(500).json({ success: false, message: "Internal server error" });
+    }
+  });
+
+  // Media upload route
+  app.post("/api/upload", requireAdmin, upload.single('file'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ success: false, message: "No file uploaded" });
+      }
+
+      // Upload to Cloudinary
+      const result = await new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+          {
+            resource_type: "auto", // Automatically detect file type
+            folder: "technurture_blog", // Organize uploads in a folder
+          },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          }
+        );
+        uploadStream.end(req.file!.buffer);
+      });
+
+      res.json({
+        success: true,
+        url: (result as any).secure_url,
+        public_id: (result as any).public_id
+      });
+    } catch (error) {
+      console.error("Upload error:", error);
+      res.status(500).json({ success: false, message: "Upload failed" });
     }
   });
 

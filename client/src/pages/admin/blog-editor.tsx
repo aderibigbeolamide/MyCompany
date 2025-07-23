@@ -12,7 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { ArrowLeft, Save, Eye } from "lucide-react";
+import { ArrowLeft, Save, Eye, Upload, Image, Video } from "lucide-react";
 import { insertBlogPostSchema, type BlogPost, type InsertBlogPost } from "@shared/schema";
 
 export default function BlogEditor() {
@@ -21,6 +21,7 @@ export default function BlogEditor() {
   const { toast } = useToast();
   const isEditing = params.id !== undefined;
   const blogId = params.id ? parseInt(params.id) : undefined;
+  const [uploading, setUploading] = useState(false);
 
   const { data: blogPost, isLoading } = useQuery<BlogPost>({
     queryKey: ["/api/blog", blogId],
@@ -47,16 +48,51 @@ export default function BlogEditor() {
       form.reset({
         title: blogPost.title,
         content: blogPost.content,
-        excerpt: blogPost.excerpt ?? "",
-        category: blogPost.category ?? "",
+        excerpt: blogPost.excerpt || "",
+        category: blogPost.category || "",
         author: blogPost.author,
-        authorAvatar: blogPost.authorAvatar ?? "",
-        image: blogPost.image ?? "",
-        readTime: blogPost.readTime ?? "",
+        authorAvatar: blogPost.authorAvatar || "",
+        image: blogPost.image || "",
+        readTime: blogPost.readTime || "",
         published: blogPost.published ?? 0,
       });
     }
   }, [blogPost, isEditing, form]);
+
+  const uploadMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append('file', file);
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+      return response.json();
+    },
+    onSuccess: (data) => {
+      const currentContent = form.getValues('content');
+      const isImage = data.url.match(/\.(jpg|jpeg|png|gif|webp)$/i);
+      const mediaTag = isImage 
+        ? `<img src="${data.url}" alt="Uploaded image" style="max-width: 100%; height: auto;" />`
+        : `<video src="${data.url}" controls style="max-width: 100%; height: auto;"></video>`;
+      
+      form.setValue('content', currentContent + '\n\n' + mediaTag);
+      toast({
+        title: "Success",
+        description: "Media uploaded successfully",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to upload media",
+        variant: "destructive",
+      });
+    }
+  });
 
   const saveMutation = useMutation({
     mutationFn: async (data: InsertBlogPost) => {
@@ -85,6 +121,17 @@ export default function BlogEditor() {
 
   const onSubmit = (data: InsertBlogPost) => {
     saveMutation.mutate(data);
+  };
+
+  const handleFileSelect = (event: Event) => {
+    const target = event.target as HTMLInputElement;
+    const file = target.files?.[0];
+    if (file) {
+      setUploading(true);
+      uploadMutation.mutate(file, {
+        onSettled: () => setUploading(false)
+      });
+    }
   };
 
   if (isLoading && isEditing) {
@@ -191,13 +238,36 @@ export default function BlogEditor() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Content</FormLabel>
-                          <FormControl>
-                            <Textarea 
-                              placeholder="Write your blog post content here..."
-                              rows={15}
-                              {...field}
-                            />
-                          </FormControl>
+                          <div className="space-y-2">
+                            <div className="flex gap-2">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                disabled={uploading}
+                                onClick={() => {
+                                  const input = document.createElement('input');
+                                  input.type = 'file';
+                                  input.accept = 'image/*,video/*';
+                                  input.onchange = handleFileSelect;
+                                  input.click();
+                                }}
+                              >
+                                <Upload className="h-4 w-4 mr-2" />
+                                {uploading ? 'Uploading...' : 'Upload Media'}
+                              </Button>
+                              <span className="text-sm text-gray-500 self-center">
+                                Images and videos will be inserted into content
+                              </span>
+                            </div>
+                            <FormControl>
+                              <Textarea 
+                                placeholder="Write your blog post content here... You can use HTML tags for formatting."
+                                rows={15}
+                                {...field}
+                              />
+                            </FormControl>
+                          </div>
                           <FormMessage />
                         </FormItem>
                       )}

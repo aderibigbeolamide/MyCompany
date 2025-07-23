@@ -9,7 +9,7 @@ export default function Home() {
       icon: <Code className="h-8 w-8 text-primary" />,
       title: "Web Development",
       description: "Custom web applications, responsive websites, and e-commerce solutions built with the technology stack that fits your project requirements.",
-      features: ["Frontend Development (React, Vue, Angular, Svelte)", "E-commerce Solutions", "API Integration"]
+      features: ["E-commerce Solutions", "API Integration", "Responsive Design"]
     },
     {
       icon: <Brain className="h-8 w-8 text-accent" />,
