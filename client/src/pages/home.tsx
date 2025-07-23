@@ -8,8 +8,8 @@ export default function Home() {
     {
       icon: <Code className="h-8 w-8 text-primary" />,
       title: "Web Development",
-      description: "Custom web applications, responsive websites, and e-commerce solutions built with modern technologies.",
-      features: ["React.js & Next.js Development", "E-commerce Solutions", "API Integration"]
+      description: "Custom web applications, responsive websites, and e-commerce solutions built with the technology stack that fits your project requirements.",
+      features: ["Frontend Development (React, Vue, Angular, Svelte)", "E-commerce Solutions", "API Integration"]
     },
     {
       icon: <Brain className="h-8 w-8 text-accent" />,

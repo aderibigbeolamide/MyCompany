@@ -49,8 +49,8 @@ export default function WebDevelopment() {
     {
       icon: <Globe className="h-8 w-8 text-primary" />,
       title: "Custom Web Applications",
-      description: "Scalable, responsive web applications built with modern technologies",
-      features: ["React.js/Next.js Development", "Progressive Web Apps (PWA)", "API Integration", "Real-time Features"]
+      description: "Scalable, responsive web applications built with the technology stack that fits your project requirements",
+      features: ["Frontend Framework Selection (React, Vue, Angular, Svelte)", "Progressive Web Apps (PWA)", "API Integration", "Real-time Features"]
     },
     {
       icon: <Palette className="h-8 w-8 text-accent" />,
@@ -61,8 +61,8 @@ export default function WebDevelopment() {
     {
       icon: <Database className="h-8 w-8 text-secondary" />,
       title: "Backend Development",
-      description: "Robust APIs and database solutions to power your applications",
-      features: ["RESTful API Development", "Database Design", "Authentication Systems", "Cloud Integration"]
+      description: "Robust APIs and database solutions using the optimal backend technology for your needs",
+      features: ["API Development (REST/GraphQL)", "Database Design (SQL/NoSQL)", "Authentication Systems", "Cloud Integration"]
     },
     {
       icon: <Shield className="h-8 w-8 text-primary" />,
