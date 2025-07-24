@@ -6,16 +6,22 @@ import { useAuth } from "@/hooks/use-auth";
 import { useEffect } from "react";
 
 export default function AdminDashboard() {
-  const { isAuthenticated, isAdmin, logout } = useAuth();
+  const { isAuthenticated, isAdmin, logout, isLoading } = useAuth();
 
   useEffect(() => {
-    if (!isAuthenticated || !isAdmin) {
+    console.log('Dashboard auth check:', { isAuthenticated, isAdmin, isLoading });
+    if (!isLoading && (!isAuthenticated || !isAdmin)) {
+      console.log('Redirecting to login');
       window.location.href = '/admin/login';
     }
-  }, [isAuthenticated, isAdmin]);
+  }, [isAuthenticated, isAdmin, isLoading]);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   if (!isAuthenticated || !isAdmin) {
-    return <div>Loading...</div>;
+    return <div>Redirecting to login...</div>;
   }
 
   const stats = [

@@ -11,8 +11,27 @@ export function useAuth() {
     retry: false,
     staleTime: 1000 * 60 * 5, // 5 minutes
     queryFn: async () => {
-      const response = await apiRequest("GET", "/api/auth/me");
-      return response.json();
+      try {
+        const response = await fetch("/api/auth/me", {
+          credentials: "include",
+        });
+        
+        if (response.status === 401) {
+          console.log('Not authenticated');
+          return { success: false, message: "Not authenticated" };
+        }
+        
+        if (!response.ok) {
+          throw new Error(`${response.status}: ${response.statusText}`);
+        }
+        
+        const result = await response.json();
+        console.log('Auth response:', result);
+        return result;
+      } catch (error) {
+        console.log('Auth error:', error);
+        return { success: false, message: "Auth error" };
+      }
     },
   });
 
