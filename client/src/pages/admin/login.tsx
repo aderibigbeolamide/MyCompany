@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation, Link } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import { ArrowLeft } from "lucide-react";
@@ -22,6 +22,7 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 export default function AdminLogin() {
   const [location, setLocation] = useLocation();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -38,6 +39,8 @@ export default function AdminLogin() {
     },
     onSuccess: (data: any) => {
       if (data.success && data.user?.role === 'admin') {
+        // Invalidate auth query to refresh authentication state
+        queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
         toast({
           title: "Login successful",
           description: "Welcome to the admin dashboard!",

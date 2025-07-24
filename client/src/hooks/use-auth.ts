@@ -10,10 +10,17 @@ export function useAuth() {
     queryKey: ["/api/auth/me"],
     retry: false,
     staleTime: 1000 * 60 * 5, // 5 minutes
+    queryFn: async () => {
+      const response = await apiRequest("GET", "/api/auth/me");
+      return response.json();
+    },
   });
 
   const logoutMutation = useMutation({
-    mutationFn: () => apiRequest("POST", "/api/auth/logout", {}),
+    mutationFn: async () => {
+      const response = await apiRequest("POST", "/api/auth/logout", {});
+      return response.json();
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
       setLocation("/admin/login");
