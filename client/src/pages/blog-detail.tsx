@@ -121,7 +121,7 @@ export default function BlogDetail() {
 
           {/* Content */}
           <div 
-            className="prose prose-lg max-w-none prose-headings:text-secondary prose-links:text-primary prose-strong:text-secondary"
+            className="prose prose-lg max-w-none prose-headings:text-secondary prose-links:text-primary prose-strong:text-secondary blog-content"
             dangerouslySetInnerHTML={{ __html: blogPost.content }}
           />
         </article>

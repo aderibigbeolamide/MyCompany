@@ -189,14 +189,14 @@ export default function BlogEditor() {
   const insertMediaIntoContent = (url: string, type: string) => {
     const currentContent = form.getValues('content');
     const mediaTag = type === 'video'
-      ? `<video src="${url}" controls style="max-width: 100%; height: auto; margin: 10px 0;"></video>`
-      : `<img src="${url}" alt="Uploaded image" style="max-width: 100%; height: auto; margin: 10px 0;" />`;
+      ? `<video src="${url}" controls style="width: 100%; max-width: 600px; height: auto; border-radius: 8px; margin: 16px 0;"></video>`
+      : `<img src="${url}" alt="Uploaded image" style="max-width: 100%; height: auto; border-radius: 8px; margin: 16px 0;" />`;
     
     form.setValue('content', currentContent + '\n\n' + mediaTag);
     
     toast({
-      title: "Success",
-      description: "Media inserted into content",
+      title: "Media inserted",
+      description: `${type === 'image' ? 'Image' : 'Video'} added to your blog content`
     });
   };
 
@@ -322,8 +322,8 @@ export default function BlogEditor() {
                                   // Auto-insert into content
                                   const currentContent = form.getValues('content');
                                   const mediaHtml = result.type === 'image' 
-                                    ? `<img src="${result.url}" alt="${newFile.name}" style="max-width: 100%; height: auto;" />`
-                                    : `<video src="${result.url}" controls style="max-width: 100%; height: 300px;" />`;
+                                    ? `<img src="${result.url}" alt="${newFile.name}" style="max-width: 100%; height: auto; border-radius: 8px;" />`
+                                    : `<video src="${result.url}" controls style="width: 100%; max-width: 600px; height: auto; border-radius: 8px;" />`;
                                   
                                   form.setValue('content', currentContent + '\n\n' + mediaHtml);
                                 }}

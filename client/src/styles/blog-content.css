@@ -1,0 +1,50 @@
+/* Blog content styles for responsive media */
+.blog-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin: 16px 0;
+  display: block;
+}
+
+.blog-content video {
+  width: 100%;
+  max-width: 600px;
+  height: auto;
+  border-radius: 8px;  
+  margin: 16px 0;
+  display: block;
+}
+
+/* Responsive video containers */
+.blog-content .video-container {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+  margin: 16px 0;
+}
+
+.blog-content .video-responsive {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+  .blog-content video {
+    max-width: 100%;
+  }
+  
+  .blog-content .video-container {
+    max-width: 100%;
+  }
+}
+
+/* Ensure videos don't overflow on small screens */
+@media (max-width: 480px) {
+  .blog-content video {
+    max-width: 100%;
+    width: 100%;
+  }
+}
