@@ -4,8 +4,13 @@ import { Button } from "@/components/ui/button";
 import { CalendarDays, Clock, User } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
+import { useState, useMemo } from "react";
+import { Link } from "wouter";
 
 export default function Blog() {
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [displayCount, setDisplayCount] = useState(6);
+
   // Fetch published blog posts from the API
   const { data: blogPosts, isLoading, error } = useQuery({
     queryKey: ['/api/blog'],
@@ -127,6 +132,45 @@ export default function Blog() {
     "Data Analysis"
   ];
 
+  // Combine real blog posts with fallback articles for filtering
+  const allArticles = useMemo(() => {
+    const realPosts = blogPosts || [];
+    const realPostsWithCategoryColors = realPosts.map((post: any) => ({
+      ...post,
+      categoryColor: getCategoryColor(post.category || "Technology"),
+      date: format(new Date(post.createdAt), 'MMM d, yyyy')
+    }));
+    
+    // Only add fallback if we have fewer than 6 real posts
+    if (realPostsWithCategoryColors.length < 6) {
+      return [...realPostsWithCategoryColors, ...fallbackArticles];
+    }
+    
+    return realPostsWithCategoryColors;
+  }, [blogPosts]);
+
+  // Filter articles based on selected category
+  const filteredArticles = useMemo(() => {
+    if (selectedCategory === "All") {
+      return allArticles;
+    }
+    return allArticles.filter((article: any) => article.category === selectedCategory);
+  }, [allArticles, selectedCategory]);
+
+  // Get articles to display (featured + grid)
+  const featuredArticle = filteredArticles[0];
+  const gridArticles = filteredArticles.slice(1, displayCount + 1);
+  const hasMoreArticles = filteredArticles.length > displayCount + 1;
+
+  const handleLoadMore = () => {
+    setDisplayCount(prev => prev + 6);
+  };
+
+  const handleCategorySelect = (category: string) => {
+    setSelectedCategory(category);
+    setDisplayCount(6); // Reset display count when changing category
+  };
+
   return (
     <div className="pt-16">
       {/* Hero Section */}
@@ -147,11 +191,12 @@ export default function Blog() {
       <section className="py-8 bg-white border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-wrap gap-4 justify-center">
-            {categories.map((category, index) => (
+            {categories.map((category) => (
               <Button 
-                key={index}
-                variant={index === 0 ? "default" : "outline"}
-                className={index === 0 ? "bg-primary hover:bg-blue-700" : ""}
+                key={category}
+                variant={selectedCategory === category ? "default" : "outline"}
+                className={selectedCategory === category ? "bg-primary hover:bg-blue-700" : ""}
+                onClick={() => handleCategorySelect(category)}
               >
                 {category}
               </Button>
@@ -186,47 +231,61 @@ export default function Blog() {
             <Card className="overflow-hidden p-8 text-center">
               <p className="text-red-600">Error loading blog posts</p>
             </Card>
-          ) : (blogPosts && blogPosts.length > 0) ? (
+          ) : featuredArticle ? (
             <Card className="overflow-hidden hover:shadow-xl transition-all duration-300">
               <div className="md:flex">
                 <div className="md:w-1/2">
                   <img 
-                    src={blogPosts[0].image || "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400"} 
-                    alt={blogPosts[0].title}
+                    src={featuredArticle.image || "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400"} 
+                    alt={featuredArticle.title}
                     className="w-full h-64 md:h-full object-cover"
                   />
                 </div>
                 <div className="md:w-1/2 p-8">
                   <div className="flex items-center gap-4 mb-4">
-                    <Badge className={getCategoryColor(blogPosts[0].category)}>{blogPosts[0].category}</Badge>
+                    <Badge className={featuredArticle.categoryColor || getCategoryColor(featuredArticle.category)}>{featuredArticle.category}</Badge>
                     <div className="flex items-center text-gray-500 text-sm">
                       <CalendarDays className="h-4 w-4 mr-1" />
-                      {format(new Date(blogPosts[0].createdAt), 'MMM d, yyyy')}
+                      {featuredArticle.date || (featuredArticle.createdAt ? format(new Date(featuredArticle.createdAt), 'MMM d, yyyy') : 'Recent')}
                     </div>
                     <div className="flex items-center text-gray-500 text-sm">
                       <Clock className="h-4 w-4 mr-1" />
-                      {blogPosts[0].readTime || "5 min read"}
+                      {featuredArticle.readTime || "5 min read"}
                     </div>
                   </div>
                   <h3 className="text-2xl font-bold text-secondary mb-4 hover:text-primary transition-colors duration-200">
-                    {blogPosts[0].title}
+                    {featuredArticle.title}
                   </h3>
                   <p className="text-gray-600 mb-6 leading-relaxed">
-                    {blogPosts[0].excerpt}
+                    {featuredArticle.excerpt}
                   </p>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
-                      <div className="w-10 h-10 rounded-full mr-3 bg-primary flex items-center justify-center text-white font-semibold">
-                        {blogPosts[0].author.charAt(0).toUpperCase()}
-                      </div>
+                      {featuredArticle.author?.avatar ? (
+                        <img 
+                          src={featuredArticle.author.avatar} 
+                          alt={featuredArticle.author.name}
+                          className="w-10 h-10 rounded-full mr-3" 
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full mr-3 bg-primary flex items-center justify-center text-white font-semibold">
+                          {(featuredArticle.author?.name || featuredArticle.author || 'A').charAt(0).toUpperCase()}
+                        </div>
+                      )}
                       <div>
-                        <p className="font-medium text-secondary">{blogPosts[0].author}</p>
+                        <p className="font-medium text-secondary">{featuredArticle.author?.name || featuredArticle.author}</p>
                         <p className="text-sm text-gray-500">Author</p>
                       </div>
                     </div>
                     <Button 
                       className="bg-primary hover:bg-blue-700"
-                      onClick={() => window.open(`/blog/${blogPosts[0].id}`, '_blank')}
+                      onClick={() => {
+                        if (featuredArticle.id && typeof featuredArticle.id === 'number') {
+                          window.open(`/blog/${featuredArticle.id}`, '_blank');
+                        } else {
+                          window.alert('This is a demo article. Create real blog posts from the admin panel!');
+                        }
+                      }}
                     >
                       Read Article
                     </Button>
@@ -235,54 +294,8 @@ export default function Blog() {
               </div>
             </Card>
           ) : (
-            <Card className="overflow-hidden hover:shadow-xl transition-all duration-300">
-              <div className="md:flex">
-                <div className="md:w-1/2">
-                  <img 
-                    src={fallbackArticles[0].image} 
-                    alt={fallbackArticles[0].title}
-                    className="w-full h-64 md:h-full object-cover"
-                  />
-                </div>
-                <div className="md:w-1/2 p-8">
-                  <div className="flex items-center gap-4 mb-4">
-                    <Badge className={fallbackArticles[0].categoryColor}>{fallbackArticles[0].category}</Badge>
-                    <div className="flex items-center text-gray-500 text-sm">
-                      <CalendarDays className="h-4 w-4 mr-1" />
-                      {fallbackArticles[0].date}
-                    </div>
-                    <div className="flex items-center text-gray-500 text-sm">
-                      <Clock className="h-4 w-4 mr-1" />
-                      {fallbackArticles[0].readTime}
-                    </div>
-                  </div>
-                  <h3 className="text-2xl font-bold text-secondary mb-4 hover:text-primary transition-colors duration-200">
-                    {fallbackArticles[0].title}
-                  </h3>
-                  <p className="text-gray-600 mb-6 leading-relaxed">
-                    {fallbackArticles[0].excerpt}
-                  </p>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <img 
-                        src={fallbackArticles[0].author.avatar} 
-                        alt={fallbackArticles[0].author.name}
-                        className="w-10 h-10 rounded-full mr-3" 
-                      />
-                      <div>
-                        <p className="font-medium text-secondary">{fallbackArticles[0].author.name}</p>
-                        <p className="text-sm text-gray-500">Author</p>
-                      </div>
-                    </div>
-                    <Button 
-                      className="bg-primary hover:bg-blue-700"
-                      onClick={() => window.alert('This is a demo article. Create real blog posts from the admin panel!')}
-                    >
-                      Read Article
-                    </Button>
-                  </div>
-                </div>
-              </div>
+            <Card className="overflow-hidden p-8 text-center">
+              <p className="text-gray-600">No articles found for the selected category</p>
             </Card>
           )}
         </div>
@@ -316,8 +329,8 @@ export default function Blog() {
               <div className="col-span-full text-center text-red-600">
                 Error loading blog posts
               </div>
-            ) : (blogPosts && blogPosts.length > 1) ? (
-              blogPosts.slice(1).map((article: any) => (
+            ) : (
+              gridArticles.map((article: any) => (
                 <Card key={article.id} className="bg-white rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-300">
                   <img 
                     src={article.image || "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400"} 
@@ -326,8 +339,10 @@ export default function Blog() {
                   />
                   <CardContent className="p-6">
                     <div className="flex items-center gap-4 mb-4">
-                      <Badge className={getCategoryColor(article.category)}>{article.category}</Badge>
-                      <span className="text-gray-500 text-sm">{format(new Date(article.createdAt), 'MMM d, yyyy')}</span>
+                      <Badge className={article.categoryColor || getCategoryColor(article.category)}>{article.category}</Badge>
+                      <span className="text-gray-500 text-sm">
+                        {article.date || (article.createdAt ? format(new Date(article.createdAt), 'MMM d, yyyy') : 'Recent')}
+                      </span>
                     </div>
                     <h3 className="text-xl font-semibold text-secondary mb-3 hover:text-primary transition-colors duration-200 line-clamp-2">
                       {article.title}
@@ -337,61 +352,32 @@ export default function Blog() {
                     </p>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center">
-                        <div className="w-8 h-8 rounded-full mr-3 bg-primary flex items-center justify-center text-white text-sm font-semibold">
-                          {article.author.charAt(0).toUpperCase()}
-                        </div>
+                        {article.author?.avatar ? (
+                          <img 
+                            src={article.author.avatar} 
+                            alt={article.author.name}
+                            className="w-8 h-8 rounded-full mr-3" 
+                          />
+                        ) : (
+                          <div className="w-8 h-8 rounded-full mr-3 bg-primary flex items-center justify-center text-white text-sm font-semibold">
+                            {(article.author?.name || article.author || 'A').charAt(0).toUpperCase()}
+                          </div>
+                        )}
                         <div>
-                          <p className="text-sm font-medium text-secondary">{article.author}</p>
+                          <p className="text-sm font-medium text-secondary">{article.author?.name || article.author}</p>
                           <p className="text-xs text-gray-500">{article.readTime || "5 min read"}</p>
                         </div>
                       </div>
                       <Button 
                         variant="ghost" 
                         className="text-primary hover:text-blue-700 text-sm font-medium"
-                        onClick={() => window.open(`/blog/${article.id}`, '_blank')}
-                      >
-                        Read More
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
-            ) : (
-              // Fallback to static articles if no blog posts available
-              fallbackArticles.slice(1).map((article) => (
-                <Card key={article.id} className="bg-white rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-300">
-                  <img 
-                    src={article.image} 
-                    alt={article.title}
-                    className="w-full h-48 object-cover" 
-                  />
-                  <CardContent className="p-6">
-                    <div className="flex items-center gap-4 mb-4">
-                      <Badge className={article.categoryColor}>{article.category}</Badge>
-                      <span className="text-gray-500 text-sm">{article.date}</span>
-                    </div>
-                    <h3 className="text-xl font-semibold text-secondary mb-3 hover:text-primary transition-colors duration-200 line-clamp-2">
-                      {article.title}
-                    </h3>
-                    <p className="text-gray-600 mb-4 line-clamp-3">
-                      {article.excerpt}
-                    </p>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <img 
-                          src={article.author.avatar} 
-                          alt={article.author.name}
-                          className="w-8 h-8 rounded-full mr-3" 
-                        />
-                        <div>
-                          <p className="text-sm font-medium text-secondary">{article.author.name}</p>
-                          <p className="text-xs text-gray-500">{article.readTime}</p>
-                        </div>
-                      </div>
-                      <Button 
-                        variant="ghost" 
-                        className="text-primary hover:text-blue-700 text-sm font-medium"
-                        onClick={() => window.alert('This is a demo article. Create real blog posts from the admin panel!')}
+                        onClick={() => {
+                          if (article.id && typeof article.id === 'number') {
+                            window.open(`/blog/${article.id}`, '_blank');
+                          } else {
+                            window.alert('This is a demo article. Create real blog posts from the admin panel!');
+                          }
+                        }}
                       >
                         Read More
                       </Button>
@@ -402,15 +388,18 @@ export default function Blog() {
             )}
           </div>
 
-          <div className="text-center mt-12">
-            <Button 
-              size="lg"
-              variant="outline"
-              className="border-2 border-secondary text-secondary hover:bg-secondary hover:text-white px-8 py-4 text-lg font-semibold"
-            >
-              Load More Articles
-            </Button>
-          </div>
+          {hasMoreArticles && (
+            <div className="text-center mt-12">
+              <Button 
+                size="lg"
+                variant="outline"
+                className="border-2 border-secondary text-secondary hover:bg-secondary hover:text-white px-8 py-4 text-lg font-semibold"
+                onClick={handleLoadMore}
+              >
+                Load More Articles
+              </Button>
+            </div>
+          )}
         </div>
       </section>
 
