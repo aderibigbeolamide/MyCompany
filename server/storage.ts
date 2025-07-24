@@ -3,7 +3,6 @@ import {
   type Contact, type Enrollment, type User, type BlogPost, type DynamicForm, type FormSubmission,
   type InsertContact, type InsertEnrollment, type InsertUser, type InsertBlogPost, type InsertDynamicForm, type InsertFormSubmission 
 } from "@shared/schema";
-import { db } from "./db";
 import { eq, desc } from "drizzle-orm";
 
 export interface IStorage {
@@ -241,17 +240,25 @@ export class MemStorage implements IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
+  private async getDB() {
+    const { db } = await import("./db");
+    return db;
+  }
+
   async getUser(id: number): Promise<User | undefined> {
+    const db = await this.getDB();
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user || undefined;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
+    const db = await this.getDB();
     const [user] = await db.select().from(users).where(eq(users.username, username));
     return user || undefined;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
+    const db = await this.getDB();
     const [user] = await db
       .insert(users)
       .values(insertUser)
@@ -260,6 +267,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createContact(insertContact: InsertContact): Promise<Contact> {
+    const db = await this.getDB();
     const [contact] = await db
       .insert(contacts)
       .values(insertContact)
@@ -268,10 +276,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getContacts(): Promise<Contact[]> {
+    const db = await this.getDB();
     return await db.select().from(contacts).orderBy(desc(contacts.createdAt));
   }
 
   async createEnrollment(insertEnrollment: InsertEnrollment): Promise<Enrollment> {
+    const db = await this.getDB();
     const [enrollment] = await db
       .insert(enrollments)
       .values(insertEnrollment)
@@ -280,11 +290,13 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getEnrollments(): Promise<Enrollment[]> {
+    const db = await this.getDB();
     return await db.select().from(enrollments).orderBy(desc(enrollments.createdAt));
   }
 
   // Blog Posts
   async createBlogPost(insertBlogPost: InsertBlogPost): Promise<BlogPost> {
+    const db = await this.getDB();
     const [blogPost] = await db
       .insert(blogPosts)
       .values(insertBlogPost)
@@ -293,6 +305,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getBlogPosts(published?: boolean): Promise<BlogPost[]> {
+    const db = await this.getDB();
     if (published !== undefined) {
       return await db.select().from(blogPosts)
         .where(eq(blogPosts.published, published ? 1 : 0))
@@ -303,11 +316,13 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getBlogPost(id: number): Promise<BlogPost | undefined> {
+    const db = await this.getDB();
     const [blogPost] = await db.select().from(blogPosts).where(eq(blogPosts.id, id));
     return blogPost || undefined;
   }
 
   async updateBlogPost(id: number, updateData: Partial<InsertBlogPost>): Promise<BlogPost> {
+    const db = await this.getDB();
     const [blogPost] = await db
       .update(blogPosts)
       .set({ ...updateData, updatedAt: new Date() })
@@ -317,11 +332,13 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteBlogPost(id: number): Promise<void> {
+    const db = await this.getDB();
     await db.delete(blogPosts).where(eq(blogPosts.id, id));
   }
 
   // Dynamic Forms
   async createDynamicForm(insertForm: InsertDynamicForm): Promise<DynamicForm> {
+    const db = await this.getDB();
     const [form] = await db
       .insert(dynamicForms)
       .values(insertForm)
@@ -330,6 +347,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getDynamicForms(active?: boolean): Promise<DynamicForm[]> {
+    const db = await this.getDB();
     if (active !== undefined) {
       return await db.select().from(dynamicForms)
         .where(eq(dynamicForms.active, active ? 1 : 0))
@@ -340,11 +358,13 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getDynamicForm(id: number): Promise<DynamicForm | undefined> {
+    const db = await this.getDB();
     const [form] = await db.select().from(dynamicForms).where(eq(dynamicForms.id, id));
     return form || undefined;
   }
 
   async updateDynamicForm(id: number, updateData: Partial<InsertDynamicForm>): Promise<DynamicForm> {
+    const db = await this.getDB();
     const [form] = await db
       .update(dynamicForms)
       .set({ ...updateData, updatedAt: new Date() })
@@ -354,11 +374,13 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteDynamicForm(id: number): Promise<void> {
+    const db = await this.getDB();
     await db.delete(dynamicForms).where(eq(dynamicForms.id, id));
   }
 
   // Form Submissions
   async createFormSubmission(insertSubmission: InsertFormSubmission): Promise<FormSubmission> {
+    const db = await this.getDB();
     const [submission] = await db
       .insert(formSubmissions)
       .values(insertSubmission)
@@ -367,6 +389,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getFormSubmissions(formId?: number): Promise<FormSubmission[]> {
+    const db = await this.getDB();
     if (formId !== undefined) {
       return await db.select().from(formSubmissions)
         .where(eq(formSubmissions.formId, formId))
@@ -377,4 +400,6 @@ export class DatabaseStorage implements IStorage {
   }
 }
 
-export const storage = new DatabaseStorage();
+// Use MemStorage for development when no database is provisioned
+// Switch to DatabaseStorage when DATABASE_URL is available
+export const storage = process.env.DATABASE_URL ? new DatabaseStorage() : new MemStorage();
