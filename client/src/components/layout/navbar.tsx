@@ -51,8 +51,8 @@ export default function Navbar() {
                 </Button>
               </Link>
               <Link href="/admin/login">
-                <Button variant="outline" size="sm">
-                  Admin
+                <Button variant="outline" size="sm" className="ml-2 border-primary text-primary hover:bg-primary hover:text-white">
+                  🔐 Admin
                 </Button>
               </Link>
             </div>
@@ -103,10 +103,10 @@ export default function Navbar() {
             </Link>
             <Link href="/admin/login">
               <span
-                className="block px-3 py-2 text-accent font-medium cursor-pointer"
+                className="block px-3 py-2 text-primary font-bold cursor-pointer border-l-4 border-primary bg-blue-50"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                Admin
+                🔐 Admin Login
               </span>
             </Link>
           </div>
