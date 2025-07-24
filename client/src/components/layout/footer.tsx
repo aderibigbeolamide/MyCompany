@@ -7,8 +7,15 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           <div>
-            <div className="font-space font-bold text-2xl text-white mb-4">
-              TechNurture
+            <div className="flex items-center space-x-3 mb-4">
+              <img 
+                src="/src/assets/logo.png" 
+                alt="TechNurture Logo" 
+                className="h-8 w-8 object-contain"
+              />
+              <div className="font-space font-bold text-2xl text-white">
+                TechNurture
+              </div>
             </div>
             <p className="text-gray-300 mb-6 leading-relaxed">
               Empowering businesses and individuals through innovative technology

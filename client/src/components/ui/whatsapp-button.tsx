@@ -2,7 +2,7 @@ import { MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function WhatsAppButton() {
-  const phoneNumber = import.meta.env.VITE_WHATSAPP_NUMBER || "1234567890";
+  const phoneNumber = import.meta.env.VITE_WHATSAPP_NUMBER || "2348151163966";
   
   const handleWhatsAppClick = () => {
     const url = `https://wa.me/${phoneNumber}?text=Hi! I found your website and I'm interested in learning more about your services. Can you help me get started?`;
@@ -23,7 +23,7 @@ export default function WhatsAppButton() {
         {/* Tooltip */}
         <div className="absolute bottom-16 right-0 mb-2 hidden group-hover:block">
           <div className="bg-gray-800 text-white text-sm px-3 py-2 rounded-lg shadow-lg whitespace-nowrap">
-            💬 Chat with us on WhatsApp
+            💬 Chat with Us on WhatsApp
             <div className="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-800"></div>
           </div>
         </div>

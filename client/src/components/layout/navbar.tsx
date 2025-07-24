@@ -23,8 +23,15 @@ export default function Navbar() {
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
             <Link href="/">
-              <div className="font-space font-bold text-2xl text-primary cursor-pointer">
-                TechNurture
+              <div className="flex items-center space-x-3 cursor-pointer">
+                <img 
+                  src="/src/assets/logo.png" 
+                  alt="TechNurture Logo" 
+                  className="h-10 w-10 object-contain"
+                />
+                <div className="font-space font-bold text-2xl text-primary">
+                  TechNurture
+                </div>
               </div>
             </Link>
           </div>
