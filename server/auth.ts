@@ -93,12 +93,16 @@ export class AuthService {
    */
   static async authenticateUser(username: string, password: string) {
     try {
-      const user = await storage.getUserByUsername(username);
+      // Trim whitespace from inputs to handle copy-paste issues
+      const trimmedUsername = username.trim();
+      const trimmedPassword = password.trim();
+      
+      const user = await storage.getUserByUsername(trimmedUsername);
       if (!user) {
         return null;
       }
 
-      const isValidPassword = await bcrypt.compare(password, user.password);
+      const isValidPassword = await bcrypt.compare(trimmedPassword, user.password);
       if (!isValidPassword) {
         return null;
       }

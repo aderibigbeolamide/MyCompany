@@ -52,9 +52,14 @@ export class MongoDBStorage {
     return await user.save();
   }
 
+  async getUser(id: number): Promise<IUser | null> {
+    await connectToDatabase();
+    return await User.findById(id.toString());
+  }
+
   async getUserByUsername(username: string): Promise<IUser | null> {
     await connectToDatabase();
-    return await User.findOne({ username });
+    return await User.findOne({ username: username.trim() });
   }
 
   async validateUser(username: string, password: string): Promise<IUser | null> {

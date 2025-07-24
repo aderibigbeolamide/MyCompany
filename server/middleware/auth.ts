@@ -15,35 +15,40 @@ declare global {
 }
 
 /**
- * Middleware to authenticate JWT tokens
+ * Middleware to authenticate JWT tokens or session
  */
-export const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
+export const authenticateToken = (req: any, res: Response, next: NextFunction) => {
+  // First try JWT token from Authorization header
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
-  if (!token) {
-    return res.status(401).json({ 
-      success: false, 
-      message: 'Access token required' 
-    });
+  if (token) {
+    const decoded = AuthService.verifyToken(token);
+    
+    if (decoded && decoded.type === 'access') {
+      req.user = {
+        id: decoded.userId,
+        username: decoded.username,
+        role: decoded.role
+      };
+      return next();
+    }
   }
 
-  const decoded = AuthService.verifyToken(token);
-  
-  if (!decoded || decoded.type !== 'access') {
-    return res.status(403).json({ 
-      success: false, 
-      message: 'Invalid or expired token' 
-    });
+  // Fallback to session-based auth for backward compatibility
+  if (req.session?.user) {
+    req.user = {
+      id: req.session.user.id,
+      username: req.session.user.username,
+      role: req.session.user.role
+    };
+    return next();
   }
 
-  req.user = {
-    id: decoded.userId,
-    username: decoded.username,
-    role: decoded.role
-  };
-
-  next();
+  return res.status(401).json({ 
+    success: false, 
+    message: 'Authentication required' 
+  });
 };
 
 /**

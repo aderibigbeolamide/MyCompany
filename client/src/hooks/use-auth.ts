@@ -12,12 +12,25 @@ export function useAuth() {
     staleTime: 1000 * 60 * 5, // 5 minutes
     queryFn: async () => {
       try {
+        const token = localStorage.getItem('accessToken');
+        const headers: HeadersInit = {
+          'credentials': 'include',
+        };
+        
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+        
         const response = await fetch("/api/auth/me", {
+          headers,
           credentials: "include",
         });
         
         if (response.status === 401) {
           console.log('Not authenticated');
+          // Clear tokens if authentication fails
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
           return { success: false, message: "Not authenticated" };
         }
         
@@ -30,6 +43,8 @@ export function useAuth() {
         return result;
       } catch (error) {
         console.log('Auth error:', error);
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
         return { success: false, message: "Auth error" };
       }
     },
@@ -41,6 +56,9 @@ export function useAuth() {
       return response.json();
     },
     onSuccess: () => {
+      // Clear stored tokens
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
       queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
       setLocation("/admin/login");
     },

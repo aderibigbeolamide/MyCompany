@@ -39,7 +39,11 @@ export default function AdminLogin() {
     },
     onSuccess: (data: any) => {
       console.log('Login success data:', data);
-      if (data.success && data.user?.role === 'admin') {
+      if (data.success && data.user?.role === 'admin' && data.tokens) {
+        // Store tokens for future requests
+        localStorage.setItem('accessToken', data.tokens.accessToken);
+        localStorage.setItem('refreshToken', data.tokens.refreshToken);
+        
         // Invalidate auth query to refresh authentication state
         queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
         toast({
@@ -47,9 +51,7 @@ export default function AdminLogin() {
           description: "Welcome to the admin dashboard!",
         });
         console.log('Redirecting to dashboard');
-        setTimeout(() => {
-          setLocation("/admin/dashboard");
-        }, 100); // Small delay to ensure query invalidation completes
+        setLocation("/admin/dashboard");
       } else if (data.success && data.user?.role !== 'admin') {
         toast({
           title: "Access denied",
