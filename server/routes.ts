@@ -251,7 +251,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/auth/login", async (req, res) => {
     try {
-      const { username, password } = insertUserSchema.parse(req.body);
+      // Parse and automatically trim whitespace from login credentials
+      const { username, password } = insertUserSchema.parse({
+        username: req.body.username?.trim(),
+        password: req.body.password?.trim()
+      });
       
       // Trim whitespace from inputs
       const trimmedUsername = username.trim();

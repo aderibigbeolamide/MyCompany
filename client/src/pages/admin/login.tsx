@@ -13,8 +13,14 @@ import { apiRequest } from "@/lib/queryClient";
 import { ArrowLeft } from "lucide-react";
 
 const loginSchema = z.object({
-  username: z.string().min(1, "Username is required").transform(val => val.trim()),
-  password: z.string().min(1, "Password is required").transform(val => val.trim()),
+  username: z.string()
+    .min(1, "Username is required")
+    .transform(val => val.trim())
+    .refine(val => val.length > 0, "Username cannot be empty"),
+  password: z.string()
+    .min(1, "Password is required")
+    .transform(val => val.trim())
+    .refine(val => val.length > 0, "Password cannot be empty"),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
@@ -116,8 +122,13 @@ export default function AdminLogin() {
                     <FormControl>
                       <Input 
                         placeholder="Enter your username" 
-                        {...field} 
+                        {...field}
                         disabled={loginMutation.isPending}
+                        onChange={(e) => {
+                          // Automatically trim whitespace as user types
+                          const trimmedValue = e.target.value.replace(/^\s+|\s+$/g, '');
+                          field.onChange(trimmedValue);
+                        }}
                       />
                     </FormControl>
                     <FormMessage />
@@ -134,8 +145,13 @@ export default function AdminLogin() {
                       <Input 
                         type="password" 
                         placeholder="Enter your password" 
-                        {...field} 
+                        {...field}
                         disabled={loginMutation.isPending}
+                        onChange={(e) => {
+                          // Automatically trim whitespace as user types
+                          const trimmedValue = e.target.value.replace(/^\s+|\s+$/g, '');
+                          field.onChange(trimmedValue);
+                        }}
                       />
                     </FormControl>
                     <FormMessage />
