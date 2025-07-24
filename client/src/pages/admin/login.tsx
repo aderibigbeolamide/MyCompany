@@ -8,8 +8,9 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
+import { ArrowLeft } from "lucide-react";
 
 const loginSchema = z.object({
   username: z.string().min(1, "Username is required").transform(val => val.trim()),
@@ -35,7 +36,7 @@ export default function AdminLogin() {
       const response = await apiRequest("POST", "/api/auth/login", data);
       return response;
     },
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       if (data.success && data.user?.role === 'admin') {
         toast({
           title: "Login successful",
@@ -75,14 +76,25 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">Admin Login</CardTitle>
-          <CardDescription className="text-center">
-            Sign in to access the admin dashboard
-          </CardDescription>
-        </CardHeader>
+    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      {/* Header with back to home link */}
+      <div className="max-w-md mx-auto mb-8">
+        <Link href="/">
+          <Button variant="ghost" size="sm" className="flex items-center text-gray-600 hover:text-primary">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Home
+          </Button>
+        </Link>
+      </div>
+      
+      <div className="flex items-center justify-center">
+        <Card className="w-full max-w-md">
+          <CardHeader className="space-y-1">
+            <CardTitle className="text-2xl font-bold text-center">Admin Login</CardTitle>
+            <CardDescription className="text-center">
+              Sign in to access the admin dashboard
+            </CardDescription>
+          </CardHeader>
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -132,6 +144,7 @@ export default function AdminLogin() {
           </Form>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }
