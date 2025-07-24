@@ -57,6 +57,42 @@ export default function BlogEditor() {
         readTime: blogPost.readTime || "",
         published: blogPost.published ?? 0,
       });
+
+      // Extract existing images and videos from content
+      const content = blogPost.content;
+      const mediaFiles: Array<{url: string, type: string, name?: string}> = [];
+      
+      // Extract images
+      const imgRegex = /<img[^>]+src="([^">]+)"[^>]*>/g;
+      let imgMatch;
+      let imgCount = 1;
+      while ((imgMatch = imgRegex.exec(content)) !== null) {
+        const url = imgMatch[1];
+        if (url && !url.startsWith('data:') && !mediaFiles.some(f => f.url === url)) {
+          mediaFiles.push({
+            url: url,
+            type: 'image',
+            name: `Existing Image ${imgCount++}`
+          });
+        }
+      }
+      
+      // Extract videos
+      const videoRegex = /<video[^>]+src="([^">]+)"[^>]*>/g;
+      let videoMatch;
+      let videoCount = 1;
+      while ((videoMatch = videoRegex.exec(content)) !== null) {
+        const url = videoMatch[1];
+        if (url && !url.startsWith('data:') && !mediaFiles.some(f => f.url === url)) {
+          mediaFiles.push({
+            url: url,
+            type: 'video',
+            name: `Existing Video ${videoCount++}`
+          });
+        }
+      }
+      
+      setUploadedFiles(mediaFiles);
     }
   }, [blogPost, isEditing, form]);
 
