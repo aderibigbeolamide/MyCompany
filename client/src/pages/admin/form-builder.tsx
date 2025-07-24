@@ -222,6 +222,7 @@ export default function FormBuilder() {
                               placeholder="Brief description of the form"
                               rows={3}
                               {...field}
+                              value={field.value || ""}
                             />
                           </FormControl>
                           <FormMessage />

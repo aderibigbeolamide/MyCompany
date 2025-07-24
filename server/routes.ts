@@ -12,9 +12,9 @@ import { v2 as cloudinary } from "cloudinary";
 export async function registerRoutes(app: Express): Promise<Server> {
   // Configure Cloudinary - using environment variables for security
   cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME || 'demo',
-    api_key: process.env.CLOUDINARY_API_KEY || 'demo',
-    api_secret: process.env.CLOUDINARY_API_SECRET || 'demo'
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME || 'dkslyztrf',
+    api_key: process.env.CLOUDINARY_API_KEY || '598172739873685',
+    api_secret: process.env.CLOUDINARY_API_SECRET || 'c_mSuKLzQxlqDErCwLnNiIMhjGE'
   });
 
   // Configure multer for file uploads
