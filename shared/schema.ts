@@ -78,6 +78,8 @@ export const insertEnrollmentSchema = createInsertSchema(enrollments).omit({
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
+}).extend({
+  role: z.string().optional(),
 });
 
 export type InsertContact = z.infer<typeof insertContactSchema>;

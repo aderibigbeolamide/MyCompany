@@ -5,9 +5,6 @@ import {
   InsertContact, InsertEnrollment, InsertUser, InsertBlogPost, InsertDynamicForm, InsertFormSubmission
 } from '@shared/mongodb-schema';
 import bcrypt from 'bcrypt';
-import { config } from 'dotenv';
-
-config();
 
 export class MongoDBStorage {
   constructor() {
@@ -52,9 +49,10 @@ export class MongoDBStorage {
     return await user.save();
   }
 
-  async getUser(id: number): Promise<IUser | null> {
+  async getUser(id: number): Promise<any> {
     await connectToDatabase();
-    return await User.findById(id.toString());
+    const user = await User.findById(id.toString());
+    return user;
   }
 
   async getUserByUsername(username: string): Promise<IUser | null> {
