@@ -10,11 +10,11 @@ import multer from "multer";
 import { v2 as cloudinary } from "cloudinary";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Configure Cloudinary
+  // Configure Cloudinary - using environment variables for security
   cloudinary.config({
-    cloud_name: 'dtrdllezw',
-    api_key: '598172739873685',
-    api_secret: 'c_mSuKLzQxlqDErCwLnNiIMhjGE'
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME || 'demo',
+    api_key: process.env.CLOUDINARY_API_KEY || 'demo',
+    api_secret: process.env.CLOUDINARY_API_SECRET || 'demo'
   });
 
   // Configure multer for file uploads
@@ -201,7 +201,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Media upload route - supports multiple files
+  // Media upload route - supports multiple files with local storage fallback
   app.post("/api/upload", requireAdmin, upload.array('files', 10), async (req, res) => {
     try {
       const files = req.files as Express.Multer.File[];
@@ -210,34 +210,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ success: false, message: "No files uploaded" });
       }
 
-      // Upload all files to Cloudinary
-      const uploadPromises = files.map(file => {
-        return new Promise((resolve, reject) => {
-          const uploadStream = cloudinary.uploader.upload_stream(
-            {
-              resource_type: "auto", // Automatically detect file type
-              folder: "technurture_blog", // Organize uploads in a folder
-            },
-            (error, result) => {
-              if (error) reject(error);
-              else resolve({
-                url: result!.secure_url,
-                public_id: result!.public_id,
-                resource_type: result!.resource_type,
-                format: result!.format
-              });
-            }
-          );
-          uploadStream.end(file.buffer);
+      // Check if Cloudinary is properly configured
+      const hasCloudinaryConfig = process.env.CLOUDINARY_CLOUD_NAME && 
+                                  process.env.CLOUDINARY_API_KEY && 
+                                  process.env.CLOUDINARY_API_SECRET;
+
+      if (hasCloudinaryConfig) {
+        // Upload all files to Cloudinary
+        const uploadPromises = files.map(file => {
+          return new Promise((resolve, reject) => {
+            const uploadStream = cloudinary.uploader.upload_stream(
+              {
+                resource_type: "auto", // Automatically detect file type
+                folder: "technurture_blog", // Organize uploads in a folder
+              },
+              (error, result) => {
+                if (error) reject(error);
+                else resolve({
+                  url: result!.secure_url,
+                  public_id: result!.public_id,
+                  resource_type: result!.resource_type,
+                  format: result!.format
+                });
+              }
+            );
+            uploadStream.end(file.buffer);
+          });
         });
-      });
 
-      const results = await Promise.all(uploadPromises);
+        const results = await Promise.all(uploadPromises);
 
-      res.json({
-        success: true,
-        files: results
-      });
+        res.json({
+          success: true,
+          files: results
+        });
+      } else {
+        // Local storage fallback - create data URLs for immediate use
+        const results = files.map(file => {
+          const base64Data = file.buffer.toString('base64');
+          const dataUrl = `data:${file.mimetype};base64,${base64Data}`;
+          
+          return {
+            url: dataUrl,
+            public_id: `local_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            resource_type: file.mimetype.startsWith('video/') ? 'video' : 'image',
+            format: file.mimetype.split('/')[1]
+          };
+        });
+
+        res.json({
+          success: true,
+          files: results,
+          message: "Files uploaded locally. For production, configure Cloudinary credentials."
+        });
+      }
     } catch (error) {
       console.error("Upload error:", error);
       res.status(500).json({ success: false, message: "Upload failed" });

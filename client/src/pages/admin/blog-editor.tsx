@@ -89,7 +89,7 @@ export default function BlogEditor() {
       
       toast({
         title: "Success",
-        description: `${data.files.length} file(s) uploaded successfully`,
+        description: data.message || `${data.files.length} file(s) uploaded successfully`,
       });
     },
     onError: (error) => {
