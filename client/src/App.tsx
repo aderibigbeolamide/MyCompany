@@ -19,6 +19,7 @@ import BlogEditor from "@/pages/admin/blog-editor";
 import AdminForms from "@/pages/admin/forms";
 import FormBuilder from "@/pages/admin/form-builder";
 import AdminLogin from "@/pages/admin/login";
+import AdminSubmissions from "@/pages/admin/submissions";
 import WebDevelopment from "@/pages/services/web-development";
 import AIIntegration from "@/pages/services/ai-integration";
 import BusinessAutomation from "@/pages/services/business-automation";
@@ -36,6 +37,7 @@ function Router() {
         <Route path="/admin/forms" component={AdminForms} />
         <Route path="/admin/forms/new" component={FormBuilder} />
         <Route path="/admin/forms/edit/:id" component={FormBuilder} />
+        <Route path="/admin/submissions" component={AdminSubmissions} />
         
         {/* Public Routes (with navbar/footer) */}
         <Route path="/">
