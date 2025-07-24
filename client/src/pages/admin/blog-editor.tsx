@@ -13,6 +13,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { ArrowLeft, Save, Eye, Upload, Image, Video, X, ImageIcon, VideoIcon } from "lucide-react";
+import { MediaUpload, MediaPreview } from "@/components/ui/media-upload";
+import { ImageGallery } from "@/components/ui/image-gallery";
 import { insertBlogPostSchema, type BlogPost, type InsertBlogPost } from "@shared/schema";
 
 export default function BlogEditor() {
@@ -307,81 +309,40 @@ export default function BlogEditor() {
                         <FormItem>
                           <FormLabel>Content</FormLabel>
                           <div className="space-y-2">
-                            <div className="flex gap-2">
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                disabled={uploading}
-                                onClick={() => {
-                                  const input = document.createElement('input');
-                                  input.type = 'file';
-                                  input.accept = 'image/*,video/*';
-                                  input.multiple = true;
-                                  input.onchange = handleFileSelect;
-                                  input.click();
+                            <div className="mb-4">
+                              <MediaUpload
+                                onUpload={(result) => {
+                                  const newFile = {
+                                    url: result.url,
+                                    type: result.type,
+                                    name: `${result.type}-${Date.now()}.${result.format}`
+                                  };
+                                  setUploadedFiles(prev => [...prev, newFile]);
+                                  
+                                  // Auto-insert into content
+                                  const currentContent = form.getValues('content');
+                                  const mediaHtml = result.type === 'image' 
+                                    ? `<img src="${result.url}" alt="${newFile.name}" style="max-width: 100%; height: auto;" />`
+                                    : `<video src="${result.url}" controls style="max-width: 100%; height: 300px;" />`;
+                                  
+                                  form.setValue('content', currentContent + '\n\n' + mediaHtml);
                                 }}
-                              >
-                                <Upload className="h-4 w-4 mr-2" />
-                                {uploading ? 'Uploading...' : 'Upload Images & Videos'}
-                              </Button>
-                              <span className="text-sm text-gray-500 self-center">
-                                Select multiple images and videos (up to 10 files)
-                              </span>
+                                acceptedTypes="both"
+                                maxSize={100}
+                                className="mb-4"
+                              />
                             </div>
                             
-                            {/* Media Gallery */}
+                            {/* Enhanced Media Gallery */}
                             {uploadedFiles.length > 0 && (
                               <div className="mt-4 p-4 border rounded-lg bg-gray-50">
-                                <h4 className="text-sm font-medium mb-3">Uploaded Media ({uploadedFiles.length})</h4>
-                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                                  {uploadedFiles.map((file, index) => (
-                                    <div key={index} className="relative group border rounded-lg overflow-hidden bg-white">
-                                      {file.type === 'video' ? (
-                                        <div className="aspect-video bg-gray-100 flex items-center justify-center">
-                                          <VideoIcon className="h-8 w-8 text-gray-400" />
-                                        </div>
-                                      ) : (
-                                        <img 
-                                          src={file.url} 
-                                          alt={file.name} 
-                                          className="aspect-video object-cover w-full"
-                                        />
-                                      )}
-                                      
-                                      {/* Overlay with actions */}
-                                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-200 flex items-center justify-center">
-                                        <div className="opacity-0 group-hover:opacity-100 flex space-x-2">
-                                          <Button 
-                                            size="sm" 
-                                            variant="secondary"
-                                            onClick={() => insertMediaIntoContent(file.url, file.type)}
-                                          >
-                                            Insert
-                                          </Button>
-                                          <Button 
-                                            size="sm" 
-                                            variant="destructive"
-                                            onClick={() => removeUploadedFile(index)}
-                                          >
-                                            <X className="h-3 w-3" />
-                                          </Button>
-                                        </div>
-                                      </div>
-                                      
-                                      {/* File type indicator */}
-                                      <div className="absolute top-2 right-2">
-                                        {file.type === 'video' ? (
-                                          <VideoIcon className="h-4 w-4 text-white bg-black bg-opacity-50 rounded p-1" />
-                                        ) : (
-                                          <ImageIcon className="h-4 w-4 text-white bg-black bg-opacity-50 rounded p-1" />
-                                        )}
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
+                                <ImageGallery
+                                  media={uploadedFiles}
+                                  onInsert={(item) => insertMediaIntoContent(item.url, item.type)}
+                                  onRemove={(index) => removeUploadedFile(index)}
+                                />
                                 <p className="text-xs text-gray-500 mt-2">
-                                  Click "Insert" to add media to your blog content, or "×" to remove from gallery
+                                  Click "Insert" to add media to your blog content, or preview to see full size
                                 </p>
                               </div>
                             )}

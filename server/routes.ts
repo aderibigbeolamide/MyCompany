@@ -13,18 +13,18 @@ import { AuthService, authConfig } from "./auth";
 import { authenticateToken, requireAdmin, requireAuth, rateLimitLogin } from "./middleware/auth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Configure Cloudinary - using environment variables for security
+  // Configure Cloudinary with environment variables
   cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME || 'dkslyztrf',
-    api_key: process.env.CLOUDINARY_API_KEY || '598172739873685',
-    api_secret: process.env.CLOUDINARY_API_SECRET || 'c_mSuKLzQxlqDErCwLnNiIMhjGE'
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
   });
 
   // Configure multer for file uploads
   const upload = multer({
     storage: multer.memoryStorage(),
     limits: {
-      fileSize: 50 * 1024 * 1024, // 50MB limit
+      fileSize: 100 * 1024 * 1024, // 100MB limit
     },
     fileFilter: (req, file, cb) => {
       // Allow images and videos
@@ -584,6 +584,163 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(submissions);
     } catch (error) {
       res.status(500).json({ success: false, message: "Internal server error" });
+    }
+  });
+
+  // Media Upload Routes
+  app.post("/api/upload/image", authenticateToken, upload.single('image'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          message: "No image file provided"
+        });
+      }
+
+      const result = await new Promise((resolve, reject) => {
+        cloudinary.uploader.upload_stream(
+          {
+            resource_type: 'image',
+            folder: 'technurture/images',
+            transformation: [
+              { quality: 'auto' },
+              { fetch_format: 'auto' },
+              { width: 1200, height: 800, crop: 'limit' }
+            ]
+          },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          }
+        ).end(req.file!.buffer);
+      });
+
+      res.json({
+        success: true,
+        data: {
+          url: (result as any).secure_url,
+          publicId: (result as any).public_id,
+          width: (result as any).width,
+          height: (result as any).height,
+          format: (result as any).format
+        }
+      });
+    } catch (error) {
+      console.error('Image upload error:', error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to upload image"
+      });
+    }
+  });
+
+  app.post("/api/upload/video", authenticateToken, upload.single('video'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          message: "No video file provided"
+        });
+      }
+
+      const result = await new Promise((resolve, reject) => {
+        cloudinary.uploader.upload_stream(
+          {
+            resource_type: 'video',
+            folder: 'technurture/videos',
+            transformation: [
+              { quality: 'auto' },
+              { width: 1280, height: 720, crop: 'limit' }
+            ]
+          },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          }
+        ).end(req.file!.buffer);
+      });
+
+      res.json({
+        success: true,
+        data: {
+          url: (result as any).secure_url,
+          publicId: (result as any).public_id,
+          width: (result as any).width,
+          height: (result as any).height,
+          duration: (result as any).duration,
+          format: (result as any).format,
+          thumbnail: cloudinary.url((result as any).public_id, {
+            resource_type: 'video',
+            format: 'jpg',
+            start_offset: '0',
+            width: 400,
+            height: 300,
+            crop: 'fill'
+          })
+        }
+      });
+    } catch (error) {
+      console.error('Video upload error:', error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to upload video"
+      });
+    }
+  });
+
+  // Delete media from Cloudinary
+  app.delete("/api/upload/:publicId", authenticateToken, async (req, res) => {
+    try {
+      const { publicId } = req.params;
+      const { resourceType } = req.query;
+      
+      await cloudinary.uploader.destroy(publicId.replace(/-/g, '/'), {
+        resource_type: resourceType || 'image'
+      });
+
+      res.json({
+        success: true,
+        message: "Media deleted successfully"
+      });
+    } catch (error) {
+      console.error('Media deletion error:', error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to delete media"
+      });
+    }
+  });
+
+  // Get upload signature for direct client uploads
+  app.post("/api/upload/signature", authenticateToken, (req, res) => {
+    try {
+      const { folder, resourceType } = req.body;
+      const timestamp = Math.round(new Date().getTime() / 1000);
+      
+      const signature = cloudinary.utils.api_sign_request(
+        {
+          timestamp,
+          folder: folder || 'technurture',
+          resource_type: resourceType || 'image'
+        },
+        process.env.CLOUDINARY_API_SECRET!
+      );
+
+      res.json({
+        success: true,
+        data: {
+          signature,
+          timestamp,
+          apiKey: process.env.CLOUDINARY_API_KEY,
+          cloudName: process.env.CLOUDINARY_CLOUD_NAME
+        }
+      });
+    } catch (error) {
+      console.error('Signature generation error:', error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to generate upload signature"
+      });
     }
   });
 
