@@ -9,6 +9,8 @@ import session from "express-session";
 import MemoryStore from "memorystore";
 import multer from "multer";
 import { v2 as cloudinary } from "cloudinary";
+import { AuthService, authConfig } from "./auth";
+import { authenticateToken, requireAdmin, requireAuth, rateLimitLogin } from "./middleware/auth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Configure Cloudinary - using environment variables for security
@@ -42,17 +44,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   app.use(session({
     store: sessionStore,
-    secret: process.env.SESSION_SECRET || 'your-secret-key-change-in-production',
+    secret: authConfig.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
     cookie: {
       secure: process.env.NODE_ENV === 'production',
-      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      httpOnly: true,
+      sameSite: 'strict'
     }
   }));
 
-  // Middleware to check if user is authenticated
-  const requireAuth = (req: any, res: any, next: any) => {
+  // Legacy middleware for session-based auth (kept for backward compatibility)
+  const requireSessionAuth = (req: any, res: any, next: any) => {
     if ((req.session as any)?.user) {
       next();
     } else {
@@ -60,8 +64,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   };
 
-  // Middleware to check if user is admin
-  const requireAdmin = (req: any, res: any, next: any) => {
+  const requireSessionAdmin = (req: any, res: any, next: any) => {
     if ((req.session as any)?.user?.role === 'admin') {
       next();
     } else {
@@ -69,8 +72,151 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   };
 
-  // Authentication routes
+  // JWT Authentication routes
+  app.post("/api/auth/login", rateLimitLogin, async (req, res) => {
+    try {
+      const { username, password } = req.body;
+
+      if (!username || !password) {
+        return res.status(400).json({
+          success: false,
+          message: "Username and password are required"
+        });
+      }
+
+      const user = await AuthService.authenticateUser(username, password);
+      
+      if (!user) {
+        return res.status(401).json({
+          success: false,
+          message: "Invalid credentials"
+        });
+      }
+
+      const { accessToken, refreshToken } = AuthService.generateTokens(user);
+
+      // Also set session for backward compatibility
+      (req.session as any).user = user;
+
+      res.json({
+        success: true,
+        user: {
+          id: user.id,
+          username: user.username,
+          role: user.role
+        },
+        tokens: {
+          accessToken,
+          refreshToken
+        }
+      });
+    } catch (error) {
+      console.error("Login error:", error);
+      res.status(500).json({
+        success: false,
+        message: "Internal server error"
+      });
+    }
+  });
+
+  app.post("/api/auth/refresh", async (req, res) => {
+    try {
+      const { refreshToken } = req.body;
+
+      if (!refreshToken) {
+        return res.status(400).json({
+          success: false,
+          message: "Refresh token is required"
+        });
+      }
+
+      const { accessToken } = await AuthService.refreshAccessToken(refreshToken);
+
+      res.json({
+        success: true,
+        accessToken
+      });
+    } catch (error) {
+      res.status(401).json({
+        success: false,
+        message: "Invalid refresh token"
+      });
+    }
+  });
+
+  app.post("/api/auth/logout", authenticateToken, (req, res) => {
+    // Clear session
+    req.session?.destroy((err) => {
+      if (err) {
+        console.error("Session destruction error:", err);
+      }
+    });
+
+    res.json({
+      success: true,
+      message: "Logged out successfully"
+    });
+  });
+
+  app.get("/api/auth/me", authenticateToken, (req, res) => {
+    res.json({
+      success: true,
+      user: req.user
+    });
+  });
+
+  // User registration with password validation
   app.post("/api/auth/register", async (req, res) => {
+    try {
+      const { username, password } = insertUserSchema.parse(req.body);
+
+      // Validate password strength
+      const passwordValidation = AuthService.validatePassword(password);
+      if (!passwordValidation.isValid) {
+        return res.status(400).json({
+          success: false,
+          message: "Password does not meet requirements",
+          errors: passwordValidation.errors
+        });
+      }
+
+      // Check if user already exists
+      const existingUser = await storage.getUserByUsername(username);
+      if (existingUser) {
+        return res.status(400).json({
+          success: false,
+          message: "Username already exists"
+        });
+      }
+
+      // Hash password and create user
+      const hashedPassword = await AuthService.hashPassword(password);
+      const user = await storage.createUser({
+        username,
+        password: hashedPassword
+      });
+
+      res.status(201).json({
+        success: true,
+        message: "User created successfully",
+        user: {
+          id: user.id,
+          username: user.username,
+          role: user.role
+        }
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ success: false, errors: error.errors });
+      } else {
+        console.error("Registration error:", error);
+        res.status(500).json({ success: false, message: "Internal server error" });
+      }
+    }
+  });
+
+  // Legacy login endpoint for backward compatibility
+  app.post("/api/auth/login-legacy", async (req, res) => {
     try {
       const { username, password } = insertUserSchema.parse(req.body);
       
@@ -174,7 +320,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get all contacts (for admin purposes)
-  app.get("/api/contacts", requireAdmin, async (req, res) => {
+  app.get("/api/contacts", requireAuth, requireAdmin, async (req, res) => {
     try {
       const contacts = await storage.getContacts();
       res.json(contacts);
@@ -199,7 +345,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get all enrollments (for admin purposes)
-  app.get("/api/enrollments", requireAdmin, async (req, res) => {
+  app.get("/api/enrollments", requireAuth, requireAdmin, async (req, res) => {
     try {
       const enrollments = await storage.getEnrollments();
       res.json(enrollments);
@@ -285,7 +431,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Blog Posts Routes
-  app.post("/api/blog", requireAdmin, async (req, res) => {
+  app.post("/api/blog", requireAuth, requireAdmin, async (req, res) => {
     try {
       const blogData = insertBlogPostSchema.parse(req.body);
       const blogPost = await storage.createBlogPost(blogData);
@@ -323,7 +469,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/blog/:id", requireAdmin, async (req, res) => {
+  app.put("/api/blog/:id", requireAuth, requireAdmin, async (req, res) => {
     try {
       const id = req.params.id; // Keep as string for MongoDB ObjectId
       const updateData = insertBlogPostSchema.partial().parse(req.body);
@@ -338,7 +484,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/blog/:id", requireAdmin, async (req, res) => {
+  app.delete("/api/blog/:id", requireAuth, requireAdmin, async (req, res) => {
     try {
       const id = req.params.id; // Keep as string for MongoDB ObjectId
       await storage.deleteBlogPost(id);
@@ -349,7 +495,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Dynamic Forms Routes
-  app.post("/api/forms", requireAdmin, async (req, res) => {
+  app.post("/api/forms", requireAuth, requireAdmin, async (req, res) => {
     try {
       const formData = insertDynamicFormSchema.parse(req.body);
       const form = await storage.createDynamicForm(formData);
@@ -387,7 +533,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/forms/:id", requireAdmin, async (req, res) => {
+  app.put("/api/forms/:id", requireAuth, requireAdmin, async (req, res) => {
     try {
       const id = req.params.id; // Keep as string for MongoDB ObjectId
       const updateData = insertDynamicFormSchema.partial().parse(req.body);
@@ -402,7 +548,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/forms/:id", requireAdmin, async (req, res) => {
+  app.delete("/api/forms/:id", requireAuth, requireAdmin, async (req, res) => {
     try {
       const id = req.params.id; // Keep as string for MongoDB ObjectId
       await storage.deleteDynamicForm(id);
@@ -427,7 +573,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/submissions", requireAdmin, async (req, res) => {
+  app.get("/api/submissions", requireAuth, requireAdmin, async (req, res) => {
     try {
       const formId = req.query.formId ? parseInt(req.query.formId as string) : undefined;
       const submissions = await storage.getFormSubmissions(formId);

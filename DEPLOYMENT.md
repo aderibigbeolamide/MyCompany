@@ -183,14 +183,44 @@ The application will automatically detect the MongoDB connection string and use 
 
 ## Environment Variables Reference
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `MONGODB_URI` | MongoDB connection string | Yes |
-| `CLOUDINARY_CLOUD_NAME` | Cloudinary cloud name | Yes |
-| `CLOUDINARY_API_KEY` | Cloudinary API key | Yes |
-| `CLOUDINARY_API_SECRET` | Cloudinary API secret | Yes |
-| `NODE_ENV` | Environment (development/production) | Yes |
-| `SESSION_SECRET` | Session encryption key | No (has default) |
+### Required Variables
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `MONGODB_URI` | MongoDB connection string | `mongodb+srv://user:pass@cluster.net/db` |
+| `CLOUDINARY_CLOUD_NAME` | Cloudinary cloud name | `your_cloud_name` |
+| `CLOUDINARY_API_KEY` | Cloudinary API key | `123456789012345` |
+| `CLOUDINARY_API_SECRET` | Cloudinary API secret | `abcdef123456789` |
+| `NODE_ENV` | Environment mode | `production` |
+
+### Security Variables (Auto-generated if not provided)
+| Variable | Description | Recommended Length |
+|----------|-------------|-------------------|
+| `JWT_SECRET` | JWT token signing key | 64+ characters |
+| `ENCRYPTION_KEY` | Data encryption key | 32 bytes (64 hex chars) |
+| `SESSION_SECRET` | Session cookie signing | 64+ characters |
+
+### Optional Configuration
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `JWT_ACCESS_EXPIRES` | Access token lifetime | `15m` |
+| `JWT_REFRESH_EXPIRES` | Refresh token lifetime | `7d` |
+| `ALLOWED_ORIGINS` | CORS allowed origins | localhost URLs |
+| `ENABLE_RATE_LIMIT` | Enable API rate limiting | `true` |
+| `ENABLE_AUDIT_LOG` | Enable audit logging | `false` |
+
+### Key Generation Commands
+Generate secure keys for production:
+
+```bash
+# JWT Secret (64 characters)
+node -e "console.log('JWT_SECRET=' + require('crypto').randomBytes(32).toString('hex'))"
+
+# Encryption Key (32 bytes)
+node -e "console.log('ENCRYPTION_KEY=' + require('crypto').randomBytes(16).toString('hex'))"
+
+# Session Secret (64 characters)  
+node -e "console.log('SESSION_SECRET=' + require('crypto').randomBytes(32).toString('hex'))"
+```
 
 ## Troubleshooting
 
