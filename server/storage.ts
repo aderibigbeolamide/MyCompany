@@ -62,6 +62,25 @@ export class MemStorage implements IStorage {
     this.currentBlogPostId = 1;
     this.currentDynamicFormId = 1;
     this.currentFormSubmissionId = 1;
+    
+    // Create default admin user
+    this.createDefaultAdmin();
+  }
+
+  private async createDefaultAdmin() {
+    // Import bcrypt dynamically to avoid circular dependency
+    const bcrypt = await import('bcrypt');
+    const hashedPassword = await bcrypt.default.hash('admin123', 10);
+    
+    const adminUser: User = {
+      id: this.currentUserId++,
+      username: 'admin',
+      password: hashedPassword,
+      role: 'admin',
+      createdAt: new Date(),
+    };
+    
+    this.users.set(adminUser.id, adminUser);
   }
 
   async getUser(id: number): Promise<User | undefined> {
