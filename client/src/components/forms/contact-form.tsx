@@ -65,13 +65,18 @@ export default function ContactForm() {
       ...data,
       phone: data.phone || null,
       service: data.service || null,
-      newsletter: data.newsletter ? 1 : 0,
     };
     contactMutation.mutate(submitData);
   };
 
   return (
     <Form {...form}>
+      <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+        <p className="text-blue-800 text-sm">
+          <strong>Quick tip:</strong> The more details you share about your goals, the better we can help you. Don't worry about being too technical - just describe what you want to achieve!
+        </p>
+      </div>
+
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField
@@ -79,9 +84,9 @@ export default function ContactForm() {
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Full Name *</FormLabel>
+                <FormLabel className="text-base font-medium">What should we call you? *</FormLabel>
                 <FormControl>
-                  <Input placeholder="Your full name" {...field} />
+                  <Input placeholder="Your name or business name" {...field} className="text-lg py-3" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -93,9 +98,9 @@ export default function ContactForm() {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Email Address *</FormLabel>
+                <FormLabel className="text-base font-medium">How can we reach you? *</FormLabel>
                 <FormControl>
-                  <Input type="email" placeholder="your@email.com" {...field} />
+                  <Input type="email" placeholder="your.email@example.com" {...field} className="text-lg py-3" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -109,9 +114,9 @@ export default function ContactForm() {
             name="phone"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Phone Number</FormLabel>
+                <FormLabel className="text-base font-medium">Phone number (optional)</FormLabel>
                 <FormControl>
-                  <Input type="tel" placeholder="+1 (555) 123-4567" {...field} />
+                  <Input type="tel" placeholder="For faster response if urgent" {...field} value={field.value || ""} className="text-lg py-3" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -123,19 +128,19 @@ export default function ContactForm() {
             name="service"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Service Interest</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormLabel className="text-base font-medium">What are you interested in?</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
                   <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a service" />
+                    <SelectTrigger className="text-lg py-3">
+                      <SelectValue placeholder="Choose what best fits your needs" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="web-development">Web Development</SelectItem>
-                    <SelectItem value="ai-integration">AI Integration</SelectItem>
-                    <SelectItem value="automation">Business Automation</SelectItem>
-                    <SelectItem value="academy">Academy Training</SelectItem>
-                    <SelectItem value="consultation">Consultation</SelectItem>
+                    <SelectItem value="web-development">🌐 Website or Web App</SelectItem>
+                    <SelectItem value="ai-integration">🤖 AI & Automation Solutions</SelectItem>
+                    <SelectItem value="automation">⚡ Business Process Automation</SelectItem>
+                    <SelectItem value="academy">📚 Learning & Training Programs</SelectItem>
+                    <SelectItem value="consultation">💬 Just Want to Chat About Ideas</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -149,12 +154,17 @@ export default function ContactForm() {
           name="message"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Message *</FormLabel>
+              <FormLabel className="text-base font-medium">Tell us about your project or goals *</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="Tell us about your project or how we can help you..."
-                  className="resize-none"
-                  rows={5}
+                  placeholder="Examples:
+• I need a website for my restaurant business
+• I want to learn coding to change careers  
+• I have an app idea but don't know where to start
+• I want to automate my business processes
+
+Don't worry about technical details - just describe what you want to achieve!"
+                  className="resize-none text-lg min-h-[150px]"
                   {...field}
                 />
               </FormControl>
@@ -175,20 +185,26 @@ export default function ContactForm() {
                 />
               </FormControl>
               <div className="space-y-1 leading-none">
-                <FormLabel className="text-sm text-gray-600">
-                  Subscribe to our newsletter for tech insights and updates
+                <FormLabel className="text-sm font-normal">
+                  📧 Send me helpful tech tips and updates (you can unsubscribe anytime)
                 </FormLabel>
               </div>
             </FormItem>
           )}
         />
 
+        <div className="bg-green-50 p-4 rounded-lg border border-green-200 mb-4">
+          <p className="text-green-800 text-sm">
+            <strong>What happens next?</strong> We'll review your message and get back to you within 24 hours with next steps or answers to your questions.
+          </p>
+        </div>
+
         <Button
           type="submit"
-          className="w-full bg-primary hover:bg-blue-700 text-white py-4 px-6 text-lg font-semibold transition-all duration-200 transform hover:scale-105"
+          className="w-full bg-primary hover:bg-blue-700 text-white py-4 px-6 text-lg font-semibold transition-all duration-200 transform hover:scale-105 shadow-lg"
           disabled={contactMutation.isPending}
         >
-          {contactMutation.isPending ? "Sending..." : "Send Message"}
+          {contactMutation.isPending ? "Sending Your Message..." : "Send Message & Get Started"}
         </Button>
       </form>
     </Form>

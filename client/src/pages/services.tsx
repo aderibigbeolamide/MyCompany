@@ -7,8 +7,8 @@ export default function Services() {
   const services = [
     {
       icon: <Code className="h-8 w-8 text-primary" />,
-      title: "Web Development",
-      description: "Custom web applications, responsive websites, and e-commerce solutions built with modern technologies.",
+      title: "Website & Web App Development",
+      description: "We build websites that work great on all devices and help your business grow online.",
       features: [
         "React.js & Next.js Development",
         "E-commerce Solutions",
@@ -20,8 +20,8 @@ export default function Services() {
     },
     {
       icon: <Brain className="h-8 w-8 text-accent" />,
-      title: "AI Integration",
-      description: "Transform your business processes with intelligent automation and AI-powered solutions.",
+      title: "AI & Smart Automation",
+      description: "Add smart features to your business - like chatbots, automated tasks, and systems that learn and improve over time.",
       features: [
         "Chatbot Development",
         "Process Automation",
@@ -33,8 +33,8 @@ export default function Services() {
     },
     {
       icon: <ServerCog className="h-8 w-8 text-secondary" />,
-      title: "Business Automation",
-      description: "Streamline operations and boost productivity with tailored automation solutions.",
+      title: "Business Process Automation",
+      description: "Save time and reduce errors by automating repetitive tasks. Focus on what matters most while technology handles the routine work.",
       features: [
         "Workflow Optimization",
         "CRM Integration",
@@ -46,8 +46,8 @@ export default function Services() {
     },
     {
       icon: <Smartphone className="h-8 w-8 text-primary" />,
-      title: "Mobile Development",
-      description: "Native and cross-platform mobile applications for iOS and Android.",
+      title: "Mobile Apps",
+      description: "Create apps for phones and tablets that your customers will love to use. Works on both iPhone and Android.",
       features: [
         "React Native Development",
         "iOS & Android Apps",
@@ -88,33 +88,33 @@ export default function Services() {
   const process = [
     {
       step: "01",
-      title: "Discovery",
-      description: "We start by understanding your business needs, challenges, and goals through detailed consultation."
+      title: "Let's Talk",
+      description: "We start by understanding what you want to achieve. No technical jargon - just a friendly conversation about your goals."
     },
     {
       step: "02",
-      title: "Planning",
-      description: "Our team creates a comprehensive project plan with timelines, milestones, and technical specifications."
+      title: "We Plan Together",
+      description: "We create a clear plan showing what we'll build, when it'll be done, and how much it'll cost. You approve every step."
     },
     {
       step: "03",
-      title: "Development",
-      description: "We build your solution using best practices, with regular updates and feedback sessions."
+      title: "We Build It",
+      description: "We start building your solution and keep you updated along the way. You can see progress and give feedback anytime."
     },
     {
       step: "04",
-      title: "Testing",
-      description: "Rigorous testing ensures your solution meets all requirements and performs optimally."
+      title: "We Test Everything",
+      description: "Before you get it, we make sure everything works perfectly. We test it thoroughly so you don't have to worry about problems."
     },
     {
       step: "05",
-      title: "Deployment",
-      description: "We deploy your solution and provide training and support for smooth implementation."
+      title: "You Get It Live",
+      description: "We make your solution live and show you how to use it. We're here to help you get comfortable with everything."
     },
     {
       step: "06",
-      title: "Support",
-      description: "Ongoing maintenance and support to ensure your solution continues to perform excellently."
+      title: "We Stay Connected",
+      description: "Even after launch, we're here to help. If something breaks or you need changes, just let us know."
     }
   ];
 
@@ -125,10 +125,10 @@ export default function Services() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className="text-4xl md:text-6xl font-bold text-secondary mb-6 font-space">
-              Our Professional Services
+              How We Can Help You
             </h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              We deliver comprehensive technology solutions that drive business growth and innovation through cutting-edge development and strategic consulting.
+              Whether you need a website, want to automate your business, or have a tech idea to bring to life - we make it happen with solutions that actually work for you.
             </p>
           </div>
         </div>
@@ -187,10 +187,10 @@ export default function Services() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-secondary mb-6 font-space">
-              Our Development Process
+              How We Work With You
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              We follow a proven methodology to ensure your project is delivered on time, within budget, and exceeds expectations.
+              Here's exactly what happens from our first conversation to launching your project. No surprises, no complicated processes.
             </p>
           </div>
 
@@ -214,10 +214,10 @@ export default function Services() {
       <section className="py-20 bg-gradient-to-br from-secondary/5 to-primary/5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-secondary mb-6 font-space">
-            Ready to Start Your Project?
+            Ready to Get Started?
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-            Let's discuss how we can help you achieve your business goals with our comprehensive technology solutions.
+            Don't worry if you're not sure exactly what you need. We'll help you figure it out together and find the right solution for your goals.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/contact">

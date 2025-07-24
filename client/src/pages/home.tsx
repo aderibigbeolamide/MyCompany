@@ -41,27 +41,32 @@ export default function Home() {
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
           <div className="max-w-3xl">
             <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight font-space">
-              Transform Your Business with{" "}
-              <span className="text-accent">Next-Gen Technology</span>
+              Your Success is Our{" "}
+              <span className="text-accent">Mission</span>
             </h1>
-            <p className="text-xl text-gray-200 mb-8 leading-relaxed">
-              We provide cutting-edge web development, AI integration, and comprehensive training programs to help businesses and individuals thrive in the digital age.
+            <p className="text-xl text-gray-200 mb-6 leading-relaxed">
+              From building your dream website to mastering new tech skills, we're here to support you every step of the way.
             </p>
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 mb-8 border border-white/20">
+              <p className="text-white/90 text-lg">
+                🚀 <strong>What makes us different?</strong> We focus on your goals, speak in plain language, and deliver results you can see.
+              </p>
+            </div>
             <div className="flex flex-col sm:flex-row gap-4">
-              <Link href="/services">
+              <Link href="/contact">
                 <Button 
                   size="lg" 
-                  className="bg-accent hover:bg-emerald-600 text-white px-8 py-4 text-lg font-semibold transition-all duration-200 transform hover:scale-105"
+                  className="bg-accent hover:bg-emerald-600 text-white px-8 py-4 text-lg font-semibold transition-all duration-200 transform hover:scale-105 shadow-lg"
                 >
-                  Explore Services
+                  Start Your Project Today
                 </Button>
               </Link>
               <Link href="/academy">
                 <Button 
                   size="lg"
-                  className="bg-white text-secondary hover:bg-gray-100 hover:text-primary px-8 py-4 text-lg font-semibold transition-all duration-200 transform hover:scale-105"
+                  className="bg-white text-secondary hover:bg-gray-100 hover:text-primary px-8 py-4 text-lg font-semibold transition-all duration-200 transform hover:scale-105 shadow-lg"
                 >
-                  Join Academy
+                  Learn New Skills
                 </Button>
               </Link>
             </div>

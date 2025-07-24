@@ -46,8 +46,8 @@ export default function Navbar() {
                 </Link>
               ))}
               <Link href="/contact">
-                <Button className="bg-primary text-white hover:bg-blue-700">
-                  Contact
+                <Button className="bg-primary text-white hover:bg-blue-700 shadow-md">
+                  Get Started
                 </Button>
               </Link>
               <Link href="/admin/login">
@@ -82,10 +82,10 @@ export default function Navbar() {
             {navItems.map((item) => (
               <Link key={item.href} href={item.href}>
                 <span
-                  className={`block px-3 py-2 cursor-pointer ${
+                  className={`block px-3 py-2 rounded-md text-base font-medium cursor-pointer transition-colors duration-200 ${
                     isActive(item.href)
-                      ? "text-gray-900 font-medium"
-                      : "text-gray-500 hover:text-primary"
+                      ? "text-gray-900 bg-gray-50"
+                      : "text-gray-500 hover:text-primary hover:bg-gray-50"
                   }`}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
@@ -93,22 +93,40 @@ export default function Navbar() {
                 </span>
               </Link>
             ))}
-            <Link href="/contact">
-              <span
-                className="block px-3 py-2 text-primary font-medium cursor-pointer"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Contact
-              </span>
-            </Link>
-            <Link href="/admin/login">
-              <span
-                className="block px-3 py-2 text-primary font-bold cursor-pointer border-l-4 border-primary bg-blue-50"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                🔐 Admin Login
-              </span>
-            </Link>
+            
+            {/* Mobile CTA Section */}
+            <div className="mt-6 pt-4 border-t border-gray-200">
+              <div className="mb-3 px-3">
+                <p className="text-sm text-gray-600 font-medium">Ready to get started?</p>
+              </div>
+              <Link href="/contact">
+                <Button 
+                  className="w-full mb-3 bg-primary text-white hover:bg-blue-700 shadow-md"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Start Your Project
+                </Button>
+              </Link>
+              <Link href="/academy">
+                <Button 
+                  variant="outline" 
+                  className="w-full mb-3 border-accent text-accent hover:bg-accent hover:text-white"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Join Academy
+                </Button>
+              </Link>
+              <Link href="/admin/login">
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  className="w-full text-xs border-primary text-primary hover:bg-primary hover:text-white"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  🔐 Admin Login
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       )}

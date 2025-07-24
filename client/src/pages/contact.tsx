@@ -51,11 +51,30 @@ export default function Contact() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className="text-4xl md:text-6xl font-bold text-secondary mb-6 font-space">
-              Get in Touch
+              Let's Talk About Your Goals
             </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Ready to transform your business or start your tech journey? Contact us today to discuss your project or learn more about our training programs.
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
+              Whether you need a website, want to learn coding, or have a tech idea - we're here to help make it happen.
             </p>
+            <div className="bg-white rounded-lg shadow-md p-6 max-w-2xl mx-auto">
+              <p className="text-lg text-gray-700 mb-4">
+                💡 <strong>Not sure where to start?</strong> That's okay! Just tell us what you're trying to achieve, and we'll guide you through the best options.
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                <div className="p-3 bg-blue-50 rounded-lg">
+                  <p className="font-semibold text-blue-800">For Businesses</p>
+                  <p className="text-sm text-blue-600">Websites, apps, automation</p>
+                </div>
+                <div className="p-3 bg-green-50 rounded-lg">
+                  <p className="font-semibold text-green-800">For Learners</p>
+                  <p className="text-sm text-green-600">Coding, AI, career growth</p>
+                </div>
+                <div className="p-3 bg-purple-50 rounded-lg">
+                  <p className="font-semibold text-purple-800">For Ideas</p>
+                  <p className="text-sm text-purple-600">Turn concepts into reality</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>

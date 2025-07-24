@@ -27,10 +27,10 @@ export default function About() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className="text-4xl md:text-6xl font-bold text-secondary mb-6 font-space">
-              About TechNurture
+              Who We Are
             </h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              We are passionate about empowering businesses and individuals through innovative technology solutions and comprehensive training programs.
+              We help people and businesses succeed with technology. Whether you need a website built or want to learn coding, we're here to support your journey.
             </p>
           </div>
         </div>
@@ -53,20 +53,20 @@ export default function About() {
               </h2>
               
               <div className="mb-8">
-                <h3 className="text-xl font-semibold text-secondary mb-4">Mission</h3>
+                <h3 className="text-xl font-semibold text-secondary mb-4">What We Do</h3>
                 <p className="text-gray-600 leading-relaxed">
-                  To bridge the gap between cutting-edge technology and practical business solutions, 
-                  empowering organizations and individuals to thrive in the digital age through 
-                  innovative development services and comprehensive training programs.
+                  We make technology work for you. Whether you're a business owner who needs a website, 
+                  someone looking to learn new skills, or have a tech idea you want to bring to life - 
+                  we help make it happen in a way that actually makes sense.
                 </p>
               </div>
 
               <div className="mb-8">
-                <h3 className="text-xl font-semibold text-secondary mb-4">Vision</h3>
+                <h3 className="text-xl font-semibold text-secondary mb-4">Our Goal</h3>
                 <p className="text-gray-600 leading-relaxed">
-                  To become the leading technology partner for businesses and the premier destination 
-                  for technology education, creating a world where everyone has access to the tools 
-                  and knowledge needed to succeed in the digital economy.
+                  To be the place people think of when they need tech help. We want to create a world 
+                  where anyone can achieve their goals with technology, regardless of their background 
+                  or current skill level.
                 </p>
               </div>
 
