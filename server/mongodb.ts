@@ -2,8 +2,9 @@ import mongoose from 'mongoose';
 
 const MONGODB_URI = process.env.MONGODB_URI || process.env.DATABASE_URL || '';
 
+// Don't throw error on import - allow graceful fallback to other storage
 if (!MONGODB_URI) {
-  throw new Error('Please define the MONGODB_URI environment variable');
+  console.log('ℹ️ No MONGODB_URI found - MongoDB storage unavailable');
 }
 
 interface MongooseCache {
@@ -22,6 +23,10 @@ if (!global.mongoose) {
 }
 
 export async function connectToDatabase(): Promise<typeof mongoose> {
+  if (!MONGODB_URI) {
+    throw new Error('MONGODB_URI is not defined');
+  }
+
   if (cached.conn) {
     return cached.conn;
   }

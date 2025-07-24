@@ -261,6 +261,9 @@ export class MemStorage implements IStorage {
 export class DatabaseStorage implements IStorage {
   private async getDB() {
     const { db } = await import("./db");
+    if (!db) {
+      throw new Error("Database not available - DATABASE_URL not configured");
+    }
     return db;
   }
 
@@ -419,32 +422,131 @@ export class DatabaseStorage implements IStorage {
   }
 }
 
-import { mongoStorage } from "./mongodb-storage";
+// Dynamic storage selection to prevent MongoDB import errors
+async function createStorage(): Promise<IStorage> {
+  // Prioritize MONGODB_URI over DATABASE_URL
+  const hasMongoURI = !!process.env.MONGODB_URI;
+  const isMongoDatabase = hasMongoURI || process.env.DATABASE_URL?.includes('mongodb');
+  const isDatabaseAvailable = !!process.env.DATABASE_URL;
 
-// Prioritize MONGODB_URI over DATABASE_URL
-const hasMongoURI = !!process.env.MONGODB_URI;
-const isMongoDatabase = hasMongoURI || process.env.DATABASE_URL?.includes('mongodb');
-const isDatabaseAvailable = !!process.env.DATABASE_URL;
+  console.log('🔍 Database Detection:', {
+    hasMongoURI,
+    isMongoDatabase,
+    isDatabaseAvailable,
+    selectedStorage: isMongoDatabase ? 'MongoDB' : isDatabaseAvailable ? 'PostgreSQL' : 'Memory',
+    MONGODB_URI: process.env.MONGODB_URI ? '[PRESENT]' : '[MISSING]',
+    DATABASE_URL: process.env.DATABASE_URL ? '[PRESENT]' : '[MISSING]'
+  });
 
-console.log('🔍 Database Detection:', {
-  hasMongoURI,
-  isMongoDatabase,
-  isDatabaseAvailable,
-  selectedStorage: isMongoDatabase ? 'MongoDB' : isDatabaseAvailable ? 'PostgreSQL' : 'Memory',
-  MONGODB_URI: process.env.MONGODB_URI ? '[PRESENT]' : '[MISSING]',
-  DATABASE_URL: process.env.DATABASE_URL ? '[PRESENT]' : '[MISSING]'
-});
-
-if (isMongoDatabase) {
-  console.log('📦 Using MongoDB storage layer');
-} else if (isDatabaseAvailable) {
-  console.log('📦 Using PostgreSQL storage layer');  
-} else {
-  console.log('📦 Using in-memory storage layer');
+  if (isMongoDatabase) {
+    console.log('📦 Using MongoDB storage layer');
+    try {
+      const { mongoStorage } = await import("./mongodb-storage");
+      return mongoStorage;
+    } catch (error) {
+      console.error('❌ Failed to load MongoDB storage, falling back to memory storage:', error);
+      return new MemStorage();
+    }
+  } else if (isDatabaseAvailable) {
+    console.log('📦 Using PostgreSQL storage layer');
+    try {
+      return new DatabaseStorage();
+    } catch (error) {
+      console.error('❌ Failed to load PostgreSQL storage, falling back to memory storage:', error);
+      return new MemStorage();
+    }
+  } else {
+    console.log('📦 Using in-memory storage layer');
+    return new MemStorage();
+  }
 }
 
-export const storage = isMongoDatabase
-  ? mongoStorage
-  : isDatabaseAvailable
-    ? new DatabaseStorage()
-    : new MemStorage();
+// Create storage instance lazily
+let storageInstance: IStorage | null = null;
+
+export const getStorage = async (): Promise<IStorage> => {
+  if (!storageInstance) {
+    storageInstance = await createStorage();
+  }
+  return storageInstance;
+};
+
+// For backward compatibility, export a storage object that throws if used synchronously
+export const storage = {
+  async getUser(id: number) {
+    const s = await getStorage();
+    return s.getUser(id);
+  },
+  async getUserByUsername(username: string) {
+    const s = await getStorage();
+    return s.getUserByUsername(username);
+  },
+  async createUser(user: InsertUser) {
+    const s = await getStorage();
+    return s.createUser(user);
+  },
+  async createContact(contact: InsertContact) {
+    const s = await getStorage();
+    return s.createContact(contact);
+  },
+  async getContacts() {
+    const s = await getStorage();
+    return s.getContacts();
+  },
+  async createEnrollment(enrollment: InsertEnrollment) {
+    const s = await getStorage();
+    return s.createEnrollment(enrollment);
+  },
+  async getEnrollments() {
+    const s = await getStorage();
+    return s.getEnrollments();
+  },
+  async createBlogPost(blogPost: InsertBlogPost) {
+    const s = await getStorage();
+    return s.createBlogPost(blogPost);
+  },
+  async getBlogPosts(published?: boolean) {
+    const s = await getStorage();
+    return s.getBlogPosts(published);
+  },
+  async getBlogPost(id: number) {
+    const s = await getStorage();
+    return s.getBlogPost(id);
+  },
+  async updateBlogPost(id: number, blogPost: Partial<InsertBlogPost>) {
+    const s = await getStorage();
+    return s.updateBlogPost(id, blogPost);
+  },
+  async deleteBlogPost(id: number) {
+    const s = await getStorage();
+    return s.deleteBlogPost(id);
+  },
+  async createDynamicForm(form: InsertDynamicForm) {
+    const s = await getStorage();
+    return s.createDynamicForm(form);
+  },
+  async getDynamicForms(active?: boolean) {
+    const s = await getStorage();
+    return s.getDynamicForms(active);
+  },
+  async getDynamicForm(id: number) {
+    const s = await getStorage();
+    return s.getDynamicForm(id);
+  },
+  async updateDynamicForm(id: number, form: Partial<InsertDynamicForm>) {
+    const s = await getStorage();
+    return s.updateDynamicForm(id, form);
+  },
+  async deleteDynamicForm(id: number) {
+    const s = await getStorage();
+    return s.deleteDynamicForm(id);
+  },
+  async createFormSubmission(submission: InsertFormSubmission) {
+    const s = await getStorage();
+    return s.createFormSubmission(submission);
+  },
+  async getFormSubmissions(formId?: number) {
+    const s = await getStorage();
+    return s.getFormSubmissions(formId);
+  }
+} as IStorage;
