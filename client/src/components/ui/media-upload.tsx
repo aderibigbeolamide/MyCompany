@@ -8,8 +8,10 @@ import { Upload, X, Image, Video, FileText } from "lucide-react";
 
 interface MediaUploadProps {
   onUpload: (result: UploadResult) => void;
+  onMultipleUpload?: (results: UploadResult[]) => void;
   acceptedTypes?: 'image' | 'video' | 'both';
   maxSize?: number; // in MB
+  multiple?: boolean;
   className?: string;
 }
 
@@ -26,8 +28,10 @@ interface UploadResult {
 
 export function MediaUpload({ 
   onUpload, 
+  onMultipleUpload,
   acceptedTypes = 'both', 
   maxSize = 100,
+  multiple = false,
   className = '' 
 }: MediaUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
@@ -94,83 +98,102 @@ export function MediaUpload({
     return true;
   };
 
-  const uploadFile = async (file: File) => {
-    if (!validateFile(file)) return;
+  const uploadFiles = async (files: File[]) => {
+    if (files.length === 0) return;
+
+    // Validate all files first
+    for (const file of files) {
+      if (!validateFile(file)) return;
+    }
 
     setIsUploading(true);
     setUploadProgress(0);
 
     try {
-      const formData = new FormData();
-      const isImage = file.type.startsWith('image/');
-      
-      if (isImage) {
-        formData.append('image', file);
-      } else {
-        formData.append('video', file);
-      }
+      const results: UploadResult[] = [];
+      let completedUploads = 0;
 
-      const endpoint = isImage ? '/api/upload/image' : '/api/upload/video';
-      const token = localStorage.getItem('accessToken');
-
-      const xhr = new XMLHttpRequest();
-
-      // Track upload progress
-      xhr.upload.addEventListener('progress', (e) => {
-        if (e.lengthComputable) {
-          const percentComplete = (e.loaded / e.total) * 100;
-          setUploadProgress(percentComplete);
+      // Upload files sequentially to avoid overwhelming the server
+      for (const file of files) {
+        const formData = new FormData();
+        const isImage = file.type.startsWith('image/');
+        
+        if (isImage) {
+          formData.append('image', file);
+        } else {
+          formData.append('video', file);
         }
-      });
 
-      const uploadPromise = new Promise<UploadResult>((resolve, reject) => {
-        xhr.onload = () => {
-          if (xhr.status === 200) {
-            const response = JSON.parse(xhr.responseText);
-            if (response.success) {
-              resolve({
-                url: response.data.url,
-                publicId: response.data.publicId,
-                type: isImage ? 'image' : 'video',
-                width: response.data.width,
-                height: response.data.height,
-                duration: response.data.duration,
-                format: response.data.format,
-                thumbnail: response.data.thumbnail
-              });
-            } else {
-              reject(new Error(response.message || 'Upload failed'));
-            }
-          } else {
-            reject(new Error('Upload failed'));
+        const endpoint = isImage ? '/api/upload/image' : '/api/upload/video';
+        const token = localStorage.getItem('accessToken');
+
+        const xhr = new XMLHttpRequest();
+
+        // Track upload progress for this file
+        xhr.upload.addEventListener('progress', (e) => {
+          if (e.lengthComputable) {
+            const fileProgress = (e.loaded / e.total) * 100;
+            const totalProgress = ((completedUploads / files.length) * 100) + (fileProgress / files.length);
+            setUploadProgress(totalProgress);
           }
-        };
+        });
 
-        xhr.onerror = () => reject(new Error('Upload failed'));
-        xhr.ontimeout = () => reject(new Error('Upload timeout'));
-      });
+        const uploadPromise = new Promise<UploadResult>((resolve, reject) => {
+          xhr.onload = () => {
+            if (xhr.status === 200) {
+              const response = JSON.parse(xhr.responseText);
+              if (response.success) {
+                resolve({
+                  url: response.data.url,
+                  publicId: response.data.publicId,
+                  type: isImage ? 'image' : 'video',
+                  width: response.data.width,
+                  height: response.data.height,
+                  duration: response.data.duration,
+                  format: response.data.format,
+                  thumbnail: response.data.thumbnail
+                });
+              } else {
+                reject(new Error(response.message || 'Upload failed'));
+              }
+            } else {
+              reject(new Error('Upload failed'));
+            }
+          };
 
-      xhr.open('POST', endpoint);
-      if (token) {
-        xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+          xhr.onerror = () => reject(new Error('Upload failed'));
+          xhr.ontimeout = () => reject(new Error('Upload timeout'));
+        });
+
+        xhr.open('POST', endpoint);
+        if (token) {
+          xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+        }
+        xhr.timeout = 300000; // 5 minutes timeout
+        xhr.send(formData);
+
+        const result = await uploadPromise;
+        results.push(result);
+        completedUploads++;
       }
-      xhr.timeout = 300000; // 5 minutes timeout
-      xhr.send(formData);
 
-      const result = await uploadPromise;
-      
       toast({
         title: "Upload successful",
-        description: `${isImage ? 'Image' : 'Video'} uploaded successfully`
+        description: `${results.length} file(s) uploaded successfully`
       });
-      
-      onUpload(result);
+
+      if (multiple && onMultipleUpload) {
+        onMultipleUpload(results);
+      } else {
+        // For single uploads or backward compatibility, call onUpload for each result
+        results.forEach(result => onUpload(result));
+      }
       
     } catch (error) {
       console.error('Upload error:', error);
       toast({
         title: "Upload failed",
-        description: error instanceof Error ? error.message : "Failed to upload file",
+        description: error instanceof Error ? error.message : "Failed to upload files",
         variant: "destructive"
       });
     } finally {
@@ -179,9 +202,17 @@ export function MediaUpload({
     }
   };
 
+  const uploadFile = async (file: File) => {
+    await uploadFiles([file]);
+  };
+
   const handleFileSelect = (files: FileList | null) => {
     if (files && files.length > 0) {
-      uploadFile(files[0]);
+      if (multiple) {
+        uploadFiles(Array.from(files));
+      } else {
+        uploadFile(files[0]);
+      }
     }
   };
 
@@ -245,6 +276,7 @@ export function MediaUpload({
         ref={fileInputRef}
         type="file"
         accept={getAcceptedFileTypes()}
+        multiple={multiple}
         onChange={(e) => handleFileSelect(e.target.files)}
         className="hidden"
       />
@@ -285,7 +317,7 @@ export function MediaUpload({
                   Drop {getTypeText()} here or click to browse
                 </p>
                 <p className="text-xs text-gray-500">
-                  Max file size: {maxSize}MB
+                  Max file size: {maxSize}MB{multiple ? ' • Multiple files supported' : ''}
                 </p>
               </div>
             </>

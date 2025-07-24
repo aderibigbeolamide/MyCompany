@@ -327,8 +327,27 @@ export default function BlogEditor() {
                                   
                                   form.setValue('content', currentContent + '\n\n' + mediaHtml);
                                 }}
+                                onMultipleUpload={(results) => {
+                                  const newFiles = results.map(result => ({
+                                    url: result.url,
+                                    type: result.type,
+                                    name: `${result.type}-${Date.now()}.${result.format}`
+                                  }));
+                                  setUploadedFiles(prev => [...prev, ...newFiles]);
+                                  
+                                  // Auto-insert all media into content
+                                  const currentContent = form.getValues('content');
+                                  const mediaHtmlArray = results.map(result => 
+                                    result.type === 'image' 
+                                      ? `<img src="${result.url}" alt="${result.type}-${Date.now()}" style="max-width: 100%; height: auto; border-radius: 8px;" />`
+                                      : `<video src="${result.url}" controls style="width: 100%; max-width: 600px; height: auto; border-radius: 8px;" />`
+                                  );
+                                  
+                                  form.setValue('content', currentContent + '\n\n' + mediaHtmlArray.join('\n\n'));
+                                }}
                                 acceptedTypes="both"
                                 maxSize={100}
+                                multiple={true}
                                 className="mb-4"
                               />
                             </div>
