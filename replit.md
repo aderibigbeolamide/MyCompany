@@ -171,6 +171,9 @@ Preferred communication style: Simple, everyday language.
 - Migrated from in-memory storage to PostgreSQL database
 - Created database connection using Neon serverless PostgreSQL
 - Updated storage layer to use DatabaseStorage with full CRUD operations
-- All data now persists permanently in database tables
+- **MongoDB Migration**: Added MongoDB support with Mongoose ORM
+- Implemented dual database support (PostgreSQL and MongoDB)
+- Created MongoDB schemas and storage layer for cloud deployment
+- All data now persists permanently in database tables (PostgreSQL or MongoDB)
 
 The application follows a monorepo structure with clear separation between client, server, and shared code, making it maintainable and scalable for future enhancements.

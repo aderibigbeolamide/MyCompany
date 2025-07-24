@@ -419,6 +419,23 @@ export class DatabaseStorage implements IStorage {
   }
 }
 
-// Use MemStorage for development when no database is provisioned
-// Switch to DatabaseStorage when DATABASE_URL is available
-export const storage = process.env.DATABASE_URL ? new DatabaseStorage() : new MemStorage();
+import { mongoStorage } from "./mongodb-storage";
+
+// Prioritize MONGODB_URI over DATABASE_URL
+const hasMongoURI = !!process.env.MONGODB_URI;
+const isMongoDatabase = hasMongoURI || process.env.DATABASE_URL?.includes('mongodb');
+const isDatabaseAvailable = !!process.env.DATABASE_URL;
+
+console.log('🔍 Database Detection:', {
+  hasMongoURI,
+  isMongoDatabase,
+  isDatabaseAvailable,
+  MONGODB_URI: process.env.MONGODB_URI ? '[PRESENT]' : '[MISSING]',
+  DATABASE_URL: process.env.DATABASE_URL ? '[PRESENT]' : '[MISSING]'
+});
+
+export const storage = isMongoDatabase
+  ? mongoStorage
+  : isDatabaseAvailable
+    ? new DatabaseStorage()
+    : new MemStorage();

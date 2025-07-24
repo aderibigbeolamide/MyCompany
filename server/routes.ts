@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertContactSchema, insertEnrollmentSchema, insertBlogPostSchema, insertDynamicFormSchema, insertFormSubmissionSchema, insertUserSchema } from "@shared/schema";
+import { insertContactSchema as mongoInsertContactSchema, insertEnrollmentSchema as mongoInsertEnrollmentSchema, insertBlogPostSchema as mongoInsertBlogPostSchema, insertDynamicFormSchema as mongoInsertDynamicFormSchema, insertFormSubmissionSchema as mongoInsertFormSubmissionSchema, insertUserSchema as mongoInsertUserSchema } from "@shared/mongodb-schema";
 import { z } from "zod";
 import bcrypt from "bcrypt";
 import session from "express-session";
@@ -310,7 +311,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/blog/:id", async (req, res) => {
     try {
-      const id = parseInt(req.params.id);
+      const id = req.params.id; // Keep as string for MongoDB ObjectId
       const blogPost = await storage.getBlogPost(id);
       if (!blogPost) {
         res.status(404).json({ success: false, message: "Blog post not found" });
@@ -324,7 +325,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/blog/:id", requireAdmin, async (req, res) => {
     try {
-      const id = parseInt(req.params.id);
+      const id = req.params.id; // Keep as string for MongoDB ObjectId
       const updateData = insertBlogPostSchema.partial().parse(req.body);
       const blogPost = await storage.updateBlogPost(id, updateData);
       res.json({ success: true, blogPost });
@@ -339,7 +340,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/blog/:id", requireAdmin, async (req, res) => {
     try {
-      const id = parseInt(req.params.id);
+      const id = req.params.id; // Keep as string for MongoDB ObjectId
       await storage.deleteBlogPost(id);
       res.json({ success: true });
     } catch (error) {
@@ -374,7 +375,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/forms/:id", async (req, res) => {
     try {
-      const id = parseInt(req.params.id);
+      const id = req.params.id; // Keep as string for MongoDB ObjectId
       const form = await storage.getDynamicForm(id);
       if (!form) {
         res.status(404).json({ success: false, message: "Form not found" });
@@ -388,7 +389,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/forms/:id", requireAdmin, async (req, res) => {
     try {
-      const id = parseInt(req.params.id);
+      const id = req.params.id; // Keep as string for MongoDB ObjectId
       const updateData = insertDynamicFormSchema.partial().parse(req.body);
       const form = await storage.updateDynamicForm(id, updateData);
       res.json({ success: true, form });
@@ -403,7 +404,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/forms/:id", requireAdmin, async (req, res) => {
     try {
-      const id = parseInt(req.params.id);
+      const id = req.params.id; // Keep as string for MongoDB ObjectId
       await storage.deleteDynamicForm(id);
       res.json({ success: true });
     } catch (error) {
@@ -414,7 +415,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Form Submissions Routes
   app.post("/api/forms/:id/submit", async (req, res) => {
     try {
-      const formId = parseInt(req.params.id);
+      const formId = req.params.id; // Keep as string for MongoDB
       const submissionData = {
         formId,
         submissionData: JSON.stringify(req.body),
