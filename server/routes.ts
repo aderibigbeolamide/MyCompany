@@ -214,6 +214,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const hasCloudinaryConfig = process.env.CLOUDINARY_CLOUD_NAME && 
                                   process.env.CLOUDINARY_API_KEY && 
                                   process.env.CLOUDINARY_API_SECRET;
+      
+      console.log('Cloudinary config check:', {
+        hasConfig: hasCloudinaryConfig,
+        cloudName: process.env.CLOUDINARY_CLOUD_NAME || 'not set',
+        apiKey: process.env.CLOUDINARY_API_KEY ? 'set' : 'not set',
+        apiSecret: process.env.CLOUDINARY_API_SECRET ? 'set' : 'not set'
+      });
 
       if (hasCloudinaryConfig) {
         // Upload all files to Cloudinary
