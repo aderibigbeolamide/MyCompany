@@ -2,8 +2,9 @@
 // Run with: node server/setup-admin.js
 
 import bcrypt from 'bcrypt';
-import { db } from './db.js';
-import { users } from '../shared/schema.js';
+import { db } from './db.ts';
+import { users } from '../shared/schema.ts';
+import { eq } from 'drizzle-orm';
 
 async function setupAdmin() {
   try {

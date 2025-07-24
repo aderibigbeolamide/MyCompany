@@ -50,7 +50,7 @@ export default function Navbar() {
                   Contact
                 </Button>
               </Link>
-              <Link href="/admin/dashboard">
+              <Link href="/admin/login">
                 <Button variant="outline" size="sm">
                   Admin
                 </Button>
@@ -101,7 +101,7 @@ export default function Navbar() {
                 Contact
               </span>
             </Link>
-            <Link href="/admin/dashboard">
+            <Link href="/admin/login">
               <span
                 className="block px-3 py-2 text-accent font-medium cursor-pointer"
                 onClick={() => setIsMobileMenuOpen(false)}
