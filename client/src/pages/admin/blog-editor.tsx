@@ -34,12 +34,12 @@ export default function BlogEditor() {
     defaultValues: {
       title: "",
       content: "",
-      excerpt: undefined,
+      excerpt: "",
       category: "",
       author: "Admin",
-      authorAvatar: undefined,
-      image: undefined,
-      readTime: undefined,
+      authorAvatar: "",
+      image: "",
+      readTime: "",
       published: 0,
     },
   });
@@ -49,12 +49,12 @@ export default function BlogEditor() {
       form.reset({
         title: blogPost.title,
         content: blogPost.content,
-        excerpt: blogPost.excerpt || undefined,
+        excerpt: blogPost.excerpt || "",
         category: blogPost.category || "",
         author: blogPost.author,
-        authorAvatar: blogPost.authorAvatar || undefined,
-        image: blogPost.image || undefined,
-        readTime: blogPost.readTime || undefined,
+        authorAvatar: blogPost.authorAvatar || "",
+        image: blogPost.image || "",
+        readTime: blogPost.readTime || "",
         published: blogPost.published ?? 0,
       });
     }

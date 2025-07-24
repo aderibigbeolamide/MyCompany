@@ -16,6 +16,7 @@ import WhatsAppButton from "@/components/ui/whatsapp-button";
 import AdminDashboard from "@/pages/admin/dashboard";
 import AdminBlog from "@/pages/admin/blog";
 import BlogEditor from "@/pages/admin/blog-editor";
+import BlogDetail from "@/pages/blog-detail";
 import AdminForms from "@/pages/admin/forms";
 import FormBuilder from "@/pages/admin/form-builder";
 import AdminLogin from "@/pages/admin/login";
@@ -85,6 +86,16 @@ function Router() {
             <Navbar />
             <main className="flex-1">
               <Blog />
+            </main>
+            <Footer />
+            <WhatsAppButton />
+          </>
+        </Route>
+        <Route path="/blog/:id">
+          <>
+            <Navbar />
+            <main className="flex-1">
+              <BlogDetail />
             </main>
             <Footer />
             <WhatsAppButton />

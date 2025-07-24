@@ -224,7 +224,10 @@ export default function Blog() {
                         <p className="text-sm text-gray-500">Author</p>
                       </div>
                     </div>
-                    <Button className="bg-primary hover:bg-blue-700">
+                    <Button 
+                      className="bg-primary hover:bg-blue-700"
+                      onClick={() => window.open(`/blog/${blogPosts[0].id}`, '_blank')}
+                    >
                       Read Article
                     </Button>
                   </div>
@@ -271,7 +274,10 @@ export default function Blog() {
                         <p className="text-sm text-gray-500">Author</p>
                       </div>
                     </div>
-                    <Button className="bg-primary hover:bg-blue-700">
+                    <Button 
+                      className="bg-primary hover:bg-blue-700"
+                      onClick={() => window.alert('This is a demo article. Create real blog posts from the admin panel!')}
+                    >
                       Read Article
                     </Button>
                   </div>
@@ -339,7 +345,11 @@ export default function Blog() {
                           <p className="text-xs text-gray-500">{article.readTime || "5 min read"}</p>
                         </div>
                       </div>
-                      <Button variant="ghost" className="text-primary hover:text-blue-700 text-sm font-medium">
+                      <Button 
+                        variant="ghost" 
+                        className="text-primary hover:text-blue-700 text-sm font-medium"
+                        onClick={() => window.open(`/blog/${article.id}`, '_blank')}
+                      >
                         Read More
                       </Button>
                     </div>
@@ -378,7 +388,11 @@ export default function Blog() {
                           <p className="text-xs text-gray-500">{article.readTime}</p>
                         </div>
                       </div>
-                      <Button variant="ghost" className="text-primary hover:text-blue-700 text-sm font-medium">
+                      <Button 
+                        variant="ghost" 
+                        className="text-primary hover:text-blue-700 text-sm font-medium"
+                        onClick={() => window.alert('This is a demo article. Create real blog posts from the admin panel!')}
+                      >
                         Read More
                       </Button>
                     </div>
