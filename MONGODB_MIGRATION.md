@@ -17,7 +17,7 @@ Update your `.env` file to use MongoDB:
 # DATABASE_URL=postgresql://replit:password@localhost/replit_db_rest_express
 
 # Add MongoDB connection
-MONGODB_URI=mongodb+srv://technuture:technutured@technurture.snt0niu.mongodb.net/?retryWrites=true&w=majority&appName=TechNurture
+MONGODB_URI=mongodb+srv://technuture:technuture@technurture.snt0niu.mongodb.net/?retryWrites=true&w=majority&appName=TechNurture
 ```
 
 ## Step 2: Run Migration Script
@@ -29,7 +29,7 @@ The migration script is ready at `scripts/migrate-to-mongodb.js`. Run it with:
 npm run migrate:mongodb
 
 # Method 2: Direct execution
-export MONGODB_URI="mongodb+srv://technuture:technutured@technurture.snt0niu.mongodb.net/?retryWrites=true&w=majority&appName=TechNurture"
+export MONGODB_URI="mongodb+srv://technuture:technuture@technurture.snt0niu.mongodb.net/?retryWrites=true&w=majority&appName=TechNurture"
 node scripts/migrate-to-mongodb.js
 ```
 
