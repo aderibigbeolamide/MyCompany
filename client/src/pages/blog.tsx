@@ -2,9 +2,37 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CalendarDays, Clock, User } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { format } from "date-fns";
 
 export default function Blog() {
-  const articles = [
+  // Fetch published blog posts from the API
+  const { data: blogPosts, isLoading, error } = useQuery({
+    queryKey: ['/api/blog'],
+    queryFn: async () => {
+      const response = await fetch('/api/blog?published=true');
+      if (!response.ok) {
+        throw new Error('Failed to fetch blog posts');
+      }
+      return response.json();
+    }
+  });
+
+  // Category color mapping
+  const getCategoryColor = (category: string) => {
+    const colors: Record<string, string> = {
+      "Web Development": "bg-primary/10 text-primary",
+      "AI & Machine Learning": "bg-accent/10 text-accent", 
+      "Career Development": "bg-secondary/10 text-secondary",
+      "Business Automation": "bg-orange-100 text-orange-700",
+      "Mobile Development": "bg-green-100 text-green-700",
+      "Technology": "bg-blue-100 text-blue-700"
+    };
+    return colors[category] || "bg-gray-100 text-gray-700";
+  };
+
+  // Static fallback articles for demonstration
+  const fallbackArticles = [
     {
       id: "modern-web-development",
       title: "10 Modern Web Development Trends to Watch in 2025",
@@ -140,52 +168,117 @@ export default function Blog() {
             <p className="text-gray-600">Our latest and most popular content</p>
           </div>
           
-          <Card className="overflow-hidden hover:shadow-xl transition-all duration-300">
-            <div className="md:flex">
-              <div className="md:w-1/2">
-                <img 
-                  src={articles[0].image} 
-                  alt={articles[0].title}
-                  className="w-full h-64 md:h-full object-cover"
-                />
-              </div>
-              <div className="md:w-1/2 p-8">
-                <div className="flex items-center gap-4 mb-4">
-                  <Badge className={articles[0].categoryColor}>{articles[0].category}</Badge>
-                  <div className="flex items-center text-gray-500 text-sm">
-                    <CalendarDays className="h-4 w-4 mr-1" />
-                    {articles[0].date}
-                  </div>
-                  <div className="flex items-center text-gray-500 text-sm">
-                    <Clock className="h-4 w-4 mr-1" />
-                    {articles[0].readTime}
+{isLoading ? (
+            <Card className="overflow-hidden">
+              <div className="md:flex">
+                <div className="md:w-1/2 bg-gray-200 animate-pulse h-64"></div>
+                <div className="md:w-1/2 p-8">
+                  <div className="animate-pulse">
+                    <div className="h-4 bg-gray-200 rounded w-1/4 mb-4"></div>
+                    <div className="h-8 bg-gray-200 rounded w-3/4 mb-4"></div>
+                    <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
+                    <div className="h-4 bg-gray-200 rounded w-2/3"></div>
                   </div>
                 </div>
-                <h3 className="text-2xl font-bold text-secondary mb-4 hover:text-primary transition-colors duration-200">
-                  {articles[0].title}
-                </h3>
-                <p className="text-gray-600 mb-6 leading-relaxed">
-                  {articles[0].excerpt}
-                </p>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <img 
-                      src={articles[0].author.avatar} 
-                      alt={articles[0].author.name}
-                      className="w-10 h-10 rounded-full mr-3" 
-                    />
-                    <div>
-                      <p className="font-medium text-secondary">{articles[0].author.name}</p>
-                      <p className="text-sm text-gray-500">Author</p>
+              </div>
+            </Card>
+          ) : error ? (
+            <Card className="overflow-hidden p-8 text-center">
+              <p className="text-red-600">Error loading blog posts</p>
+            </Card>
+          ) : (blogPosts && blogPosts.length > 0) ? (
+            <Card className="overflow-hidden hover:shadow-xl transition-all duration-300">
+              <div className="md:flex">
+                <div className="md:w-1/2">
+                  <img 
+                    src={blogPosts[0].image || "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400"} 
+                    alt={blogPosts[0].title}
+                    className="w-full h-64 md:h-full object-cover"
+                  />
+                </div>
+                <div className="md:w-1/2 p-8">
+                  <div className="flex items-center gap-4 mb-4">
+                    <Badge className={getCategoryColor(blogPosts[0].category)}>{blogPosts[0].category}</Badge>
+                    <div className="flex items-center text-gray-500 text-sm">
+                      <CalendarDays className="h-4 w-4 mr-1" />
+                      {format(new Date(blogPosts[0].createdAt), 'MMM d, yyyy')}
+                    </div>
+                    <div className="flex items-center text-gray-500 text-sm">
+                      <Clock className="h-4 w-4 mr-1" />
+                      {blogPosts[0].readTime || "5 min read"}
                     </div>
                   </div>
-                  <Button className="bg-primary hover:bg-blue-700">
-                    Read Article
-                  </Button>
+                  <h3 className="text-2xl font-bold text-secondary mb-4 hover:text-primary transition-colors duration-200">
+                    {blogPosts[0].title}
+                  </h3>
+                  <p className="text-gray-600 mb-6 leading-relaxed">
+                    {blogPosts[0].excerpt}
+                  </p>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <div className="w-10 h-10 rounded-full mr-3 bg-primary flex items-center justify-center text-white font-semibold">
+                        {blogPosts[0].author.charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <p className="font-medium text-secondary">{blogPosts[0].author}</p>
+                        <p className="text-sm text-gray-500">Author</p>
+                      </div>
+                    </div>
+                    <Button className="bg-primary hover:bg-blue-700">
+                      Read Article
+                    </Button>
+                  </div>
                 </div>
               </div>
-            </div>
-          </Card>
+            </Card>
+          ) : (
+            <Card className="overflow-hidden hover:shadow-xl transition-all duration-300">
+              <div className="md:flex">
+                <div className="md:w-1/2">
+                  <img 
+                    src={fallbackArticles[0].image} 
+                    alt={fallbackArticles[0].title}
+                    className="w-full h-64 md:h-full object-cover"
+                  />
+                </div>
+                <div className="md:w-1/2 p-8">
+                  <div className="flex items-center gap-4 mb-4">
+                    <Badge className={fallbackArticles[0].categoryColor}>{fallbackArticles[0].category}</Badge>
+                    <div className="flex items-center text-gray-500 text-sm">
+                      <CalendarDays className="h-4 w-4 mr-1" />
+                      {fallbackArticles[0].date}
+                    </div>
+                    <div className="flex items-center text-gray-500 text-sm">
+                      <Clock className="h-4 w-4 mr-1" />
+                      {fallbackArticles[0].readTime}
+                    </div>
+                  </div>
+                  <h3 className="text-2xl font-bold text-secondary mb-4 hover:text-primary transition-colors duration-200">
+                    {fallbackArticles[0].title}
+                  </h3>
+                  <p className="text-gray-600 mb-6 leading-relaxed">
+                    {fallbackArticles[0].excerpt}
+                  </p>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <img 
+                        src={fallbackArticles[0].author.avatar} 
+                        alt={fallbackArticles[0].author.name}
+                        className="w-10 h-10 rounded-full mr-3" 
+                      />
+                      <div>
+                        <p className="font-medium text-secondary">{fallbackArticles[0].author.name}</p>
+                        <p className="text-sm text-gray-500">Author</p>
+                      </div>
+                    </div>
+                    <Button className="bg-primary hover:bg-blue-700">
+                      Read Article
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          )}
         </div>
       </section>
 
@@ -198,43 +291,101 @@ export default function Blog() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {articles.slice(1).map((article) => (
-              <Card key={article.id} className="bg-white rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-300">
-                <img 
-                  src={article.image} 
-                  alt={article.title}
-                  className="w-full h-48 object-cover" 
-                />
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-4 mb-4">
-                    <Badge className={article.categoryColor}>{article.category}</Badge>
-                    <span className="text-gray-500 text-sm">{article.date}</span>
-                  </div>
-                  <h3 className="text-xl font-semibold text-secondary mb-3 hover:text-primary transition-colors duration-200 line-clamp-2">
-                    {article.title}
-                  </h3>
-                  <p className="text-gray-600 mb-4 line-clamp-3">
-                    {article.excerpt}
-                  </p>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <img 
-                        src={article.author.avatar} 
-                        alt={article.author.name}
-                        className="w-8 h-8 rounded-full mr-3" 
-                      />
-                      <div>
-                        <p className="text-sm font-medium text-secondary">{article.author.name}</p>
-                        <p className="text-xs text-gray-500">{article.readTime}</p>
-                      </div>
+            {isLoading ? (
+              // Loading skeleton
+              Array(6).fill(0).map((_, index) => (
+                <Card key={index} className="overflow-hidden">
+                  <div className="h-48 bg-gray-200 animate-pulse"></div>
+                  <div className="p-6">
+                    <div className="animate-pulse">
+                      <div className="h-4 bg-gray-200 rounded w-1/4 mb-2"></div>
+                      <div className="h-6 bg-gray-200 rounded w-3/4 mb-4"></div>
+                      <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
+                      <div className="h-4 bg-gray-200 rounded w-2/3"></div>
                     </div>
-                    <Button variant="ghost" className="text-primary hover:text-blue-700 text-sm font-medium">
-                      Read More
-                    </Button>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
+                </Card>
+              ))
+            ) : error ? (
+              <div className="col-span-full text-center text-red-600">
+                Error loading blog posts
+              </div>
+            ) : (blogPosts && blogPosts.length > 1) ? (
+              blogPosts.slice(1).map((article: any) => (
+                <Card key={article.id} className="bg-white rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-300">
+                  <img 
+                    src={article.image || "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400"} 
+                    alt={article.title}
+                    className="w-full h-48 object-cover" 
+                  />
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-4 mb-4">
+                      <Badge className={getCategoryColor(article.category)}>{article.category}</Badge>
+                      <span className="text-gray-500 text-sm">{format(new Date(article.createdAt), 'MMM d, yyyy')}</span>
+                    </div>
+                    <h3 className="text-xl font-semibold text-secondary mb-3 hover:text-primary transition-colors duration-200 line-clamp-2">
+                      {article.title}
+                    </h3>
+                    <p className="text-gray-600 mb-4 line-clamp-3">
+                      {article.excerpt}
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <div className="w-8 h-8 rounded-full mr-3 bg-primary flex items-center justify-center text-white text-sm font-semibold">
+                          {article.author.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-secondary">{article.author}</p>
+                          <p className="text-xs text-gray-500">{article.readTime || "5 min read"}</p>
+                        </div>
+                      </div>
+                      <Button variant="ghost" className="text-primary hover:text-blue-700 text-sm font-medium">
+                        Read More
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              // Fallback to static articles if no blog posts available
+              fallbackArticles.slice(1).map((article) => (
+                <Card key={article.id} className="bg-white rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-300">
+                  <img 
+                    src={article.image} 
+                    alt={article.title}
+                    className="w-full h-48 object-cover" 
+                  />
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-4 mb-4">
+                      <Badge className={article.categoryColor}>{article.category}</Badge>
+                      <span className="text-gray-500 text-sm">{article.date}</span>
+                    </div>
+                    <h3 className="text-xl font-semibold text-secondary mb-3 hover:text-primary transition-colors duration-200 line-clamp-2">
+                      {article.title}
+                    </h3>
+                    <p className="text-gray-600 mb-4 line-clamp-3">
+                      {article.excerpt}
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <img 
+                          src={article.author.avatar} 
+                          alt={article.author.name}
+                          className="w-8 h-8 rounded-full mr-3" 
+                        />
+                        <div>
+                          <p className="text-sm font-medium text-secondary">{article.author.name}</p>
+                          <p className="text-xs text-gray-500">{article.readTime}</p>
+                        </div>
+                      </div>
+                      <Button variant="ghost" className="text-primary hover:text-blue-700 text-sm font-medium">
+                        Read More
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </div>
 
           <div className="text-center mt-12">
