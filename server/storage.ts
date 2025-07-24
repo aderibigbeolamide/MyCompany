@@ -430,9 +430,18 @@ console.log('🔍 Database Detection:', {
   hasMongoURI,
   isMongoDatabase,
   isDatabaseAvailable,
+  selectedStorage: isMongoDatabase ? 'MongoDB' : isDatabaseAvailable ? 'PostgreSQL' : 'Memory',
   MONGODB_URI: process.env.MONGODB_URI ? '[PRESENT]' : '[MISSING]',
   DATABASE_URL: process.env.DATABASE_URL ? '[PRESENT]' : '[MISSING]'
 });
+
+if (isMongoDatabase) {
+  console.log('📦 Using MongoDB storage layer');
+} else if (isDatabaseAvailable) {
+  console.log('📦 Using PostgreSQL storage layer');  
+} else {
+  console.log('📦 Using in-memory storage layer');
+}
 
 export const storage = isMongoDatabase
   ? mongoStorage
