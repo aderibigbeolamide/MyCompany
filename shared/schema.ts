@@ -93,6 +93,11 @@ export const insertBlogPostSchema = createInsertSchema(blogPosts).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+}).extend({
+  excerpt: z.string().optional(),
+  readTime: z.string().optional(), 
+  image: z.string().optional(),
+  authorAvatar: z.string().optional(),
 });
 
 export const insertDynamicFormSchema = createInsertSchema(dynamicForms).omit({

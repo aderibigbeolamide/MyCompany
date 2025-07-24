@@ -12,7 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { ArrowLeft, Save, Eye, Upload, Image, Video } from "lucide-react";
+import { ArrowLeft, Save, Eye, Upload, Image, Video, X, ImageIcon, VideoIcon } from "lucide-react";
 import { insertBlogPostSchema, type BlogPost, type InsertBlogPost } from "@shared/schema";
 
 export default function BlogEditor() {
@@ -22,6 +22,7 @@ export default function BlogEditor() {
   const isEditing = params.id !== undefined;
   const blogId = params.id ? parseInt(params.id) : undefined;
   const [uploading, setUploading] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState<Array<{url: string, type: string, name?: string}>>([]);
 
   const { data: blogPost, isLoading } = useQuery<BlogPost>({
     queryKey: ["/api/blog", blogId],
@@ -33,12 +34,12 @@ export default function BlogEditor() {
     defaultValues: {
       title: "",
       content: "",
-      excerpt: "",
+      excerpt: undefined,
       category: "",
       author: "Admin",
-      authorAvatar: "",
-      image: "",
-      readTime: "",
+      authorAvatar: undefined,
+      image: undefined,
+      readTime: undefined,
       published: 0,
     },
   });
@@ -48,47 +49,53 @@ export default function BlogEditor() {
       form.reset({
         title: blogPost.title,
         content: blogPost.content,
-        excerpt: blogPost.excerpt || "",
+        excerpt: blogPost.excerpt || undefined,
         category: blogPost.category || "",
         author: blogPost.author,
-        authorAvatar: blogPost.authorAvatar || "",
-        image: blogPost.image || "",
-        readTime: blogPost.readTime || "",
+        authorAvatar: blogPost.authorAvatar || undefined,
+        image: blogPost.image || undefined,
+        readTime: blogPost.readTime || undefined,
         published: blogPost.published ?? 0,
       });
     }
   }, [blogPost, isEditing, form]);
 
   const uploadMutation = useMutation({
-    mutationFn: async (file: File) => {
+    mutationFn: async (files: FileList) => {
       const formData = new FormData();
-      formData.append('file', file);
+      Array.from(files).forEach(file => {
+        formData.append('files', file);
+      });
+      
       const response = await fetch('/api/upload', {
         method: 'POST',
         body: formData,
+        credentials: 'include',
       });
+      
       if (!response.ok) {
         throw new Error('Upload failed');
       }
       return response.json();
     },
     onSuccess: (data) => {
-      const currentContent = form.getValues('content');
-      const isImage = data.url.match(/\.(jpg|jpeg|png|gif|webp)$/i);
-      const mediaTag = isImage 
-        ? `<img src="${data.url}" alt="Uploaded image" style="max-width: 100%; height: auto;" />`
-        : `<video src="${data.url}" controls style="max-width: 100%; height: auto;"></video>`;
+      const newFiles = data.files.map((file: any) => ({
+        url: file.url,
+        type: file.resource_type === 'video' ? 'video' : 'image',
+        name: `${file.resource_type === 'video' ? 'Video' : 'Image'} ${uploadedFiles.length + 1}`
+      }));
       
-      form.setValue('content', currentContent + '\n\n' + mediaTag);
+      setUploadedFiles(prev => [...prev, ...newFiles]);
+      
       toast({
         title: "Success",
-        description: "Media uploaded successfully",
+        description: `${data.files.length} file(s) uploaded successfully`,
       });
     },
-    onError: () => {
+    onError: (error) => {
       toast({
         title: "Error",
-        description: "Failed to upload media",
+        description: "Failed to upload media files",
         variant: "destructive",
       });
     }
@@ -125,13 +132,31 @@ export default function BlogEditor() {
 
   const handleFileSelect = (event: Event) => {
     const target = event.target as HTMLInputElement;
-    const file = target.files?.[0];
-    if (file) {
+    const files = target.files;
+    if (files && files.length > 0) {
       setUploading(true);
-      uploadMutation.mutate(file, {
+      uploadMutation.mutate(files, {
         onSettled: () => setUploading(false)
       });
     }
+  };
+
+  const insertMediaIntoContent = (url: string, type: string) => {
+    const currentContent = form.getValues('content');
+    const mediaTag = type === 'video'
+      ? `<video src="${url}" controls style="max-width: 100%; height: auto; margin: 10px 0;"></video>`
+      : `<img src="${url}" alt="Uploaded image" style="max-width: 100%; height: auto; margin: 10px 0;" />`;
+    
+    form.setValue('content', currentContent + '\n\n' + mediaTag);
+    
+    toast({
+      title: "Success",
+      description: "Media inserted into content",
+    });
+  };
+
+  const removeUploadedFile = (index: number) => {
+    setUploadedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
   if (isLoading && isEditing) {
@@ -249,17 +274,74 @@ export default function BlogEditor() {
                                   const input = document.createElement('input');
                                   input.type = 'file';
                                   input.accept = 'image/*,video/*';
+                                  input.multiple = true;
                                   input.onchange = handleFileSelect;
                                   input.click();
                                 }}
                               >
                                 <Upload className="h-4 w-4 mr-2" />
-                                {uploading ? 'Uploading...' : 'Upload Media'}
+                                {uploading ? 'Uploading...' : 'Upload Images & Videos'}
                               </Button>
                               <span className="text-sm text-gray-500 self-center">
-                                Images and videos will be inserted into content
+                                Select multiple images and videos (up to 10 files)
                               </span>
                             </div>
+                            
+                            {/* Media Gallery */}
+                            {uploadedFiles.length > 0 && (
+                              <div className="mt-4 p-4 border rounded-lg bg-gray-50">
+                                <h4 className="text-sm font-medium mb-3">Uploaded Media ({uploadedFiles.length})</h4>
+                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                                  {uploadedFiles.map((file, index) => (
+                                    <div key={index} className="relative group border rounded-lg overflow-hidden bg-white">
+                                      {file.type === 'video' ? (
+                                        <div className="aspect-video bg-gray-100 flex items-center justify-center">
+                                          <VideoIcon className="h-8 w-8 text-gray-400" />
+                                        </div>
+                                      ) : (
+                                        <img 
+                                          src={file.url} 
+                                          alt={file.name} 
+                                          className="aspect-video object-cover w-full"
+                                        />
+                                      )}
+                                      
+                                      {/* Overlay with actions */}
+                                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-200 flex items-center justify-center">
+                                        <div className="opacity-0 group-hover:opacity-100 flex space-x-2">
+                                          <Button 
+                                            size="sm" 
+                                            variant="secondary"
+                                            onClick={() => insertMediaIntoContent(file.url, file.type)}
+                                          >
+                                            Insert
+                                          </Button>
+                                          <Button 
+                                            size="sm" 
+                                            variant="destructive"
+                                            onClick={() => removeUploadedFile(index)}
+                                          >
+                                            <X className="h-3 w-3" />
+                                          </Button>
+                                        </div>
+                                      </div>
+                                      
+                                      {/* File type indicator */}
+                                      <div className="absolute top-2 right-2">
+                                        {file.type === 'video' ? (
+                                          <VideoIcon className="h-4 w-4 text-white bg-black bg-opacity-50 rounded p-1" />
+                                        ) : (
+                                          <ImageIcon className="h-4 w-4 text-white bg-black bg-opacity-50 rounded p-1" />
+                                        )}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                                <p className="text-xs text-gray-500 mt-2">
+                                  Click "Insert" to add media to your blog content, or "×" to remove from gallery
+                                </p>
+                              </div>
+                            )}
                             <FormControl>
                               <Textarea 
                                 placeholder="Write your blog post content here... You can use HTML tags for formatting."
@@ -291,7 +373,7 @@ export default function BlogEditor() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Category</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value || undefined}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select category" />

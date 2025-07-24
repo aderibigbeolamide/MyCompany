@@ -201,32 +201,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Media upload route
-  app.post("/api/upload", requireAdmin, upload.single('file'), async (req, res) => {
+  // Media upload route - supports multiple files
+  app.post("/api/upload", requireAdmin, upload.array('files', 10), async (req, res) => {
     try {
-      if (!req.file) {
-        return res.status(400).json({ success: false, message: "No file uploaded" });
+      const files = req.files as Express.Multer.File[];
+      
+      if (!files || files.length === 0) {
+        return res.status(400).json({ success: false, message: "No files uploaded" });
       }
 
-      // Upload to Cloudinary
-      const result = await new Promise((resolve, reject) => {
-        const uploadStream = cloudinary.uploader.upload_stream(
-          {
-            resource_type: "auto", // Automatically detect file type
-            folder: "technurture_blog", // Organize uploads in a folder
-          },
-          (error, result) => {
-            if (error) reject(error);
-            else resolve(result);
-          }
-        );
-        uploadStream.end(req.file!.buffer);
+      // Upload all files to Cloudinary
+      const uploadPromises = files.map(file => {
+        return new Promise((resolve, reject) => {
+          const uploadStream = cloudinary.uploader.upload_stream(
+            {
+              resource_type: "auto", // Automatically detect file type
+              folder: "technurture_blog", // Organize uploads in a folder
+            },
+            (error, result) => {
+              if (error) reject(error);
+              else resolve({
+                url: result!.secure_url,
+                public_id: result!.public_id,
+                resource_type: result!.resource_type,
+                format: result!.format
+              });
+            }
+          );
+          uploadStream.end(file.buffer);
+        });
       });
+
+      const results = await Promise.all(uploadPromises);
 
       res.json({
         success: true,
-        url: (result as any).secure_url,
-        public_id: (result as any).public_id
+        files: results
       });
     } catch (error) {
       console.error("Upload error:", error);
