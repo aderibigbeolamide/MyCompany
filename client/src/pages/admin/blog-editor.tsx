@@ -117,10 +117,17 @@ export default function BlogEditor() {
       });
       navigate("/admin/blog");
     },
-    onError: () => {
+    onError: (error: any) => {
+      let errorMessage = `Failed to ${isEditing ? "update" : "create"} blog post`;
+      
+      // Handle specific payload too large errors
+      if (error?.message?.includes('413') || error?.message?.includes('payload') || error?.message?.includes('too large')) {
+        errorMessage = "Content is too large. Try reducing text length or upload images separately.";
+      }
+      
       toast({
         title: "Error",
-        description: `Failed to ${isEditing ? "update" : "create"} blog post`,
+        description: errorMessage,
         variant: "destructive",
       });
     },

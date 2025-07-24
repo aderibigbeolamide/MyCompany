@@ -5,7 +5,7 @@ import { insertContactSchema, insertEnrollmentSchema, insertBlogPostSchema, inse
 import { z } from "zod";
 import bcrypt from "bcrypt";
 import session from "express-session";
-import { MemoryStore } from "express-session";
+import MemoryStore from "memorystore";
 import multer from "multer";
 import { v2 as cloudinary } from "cloudinary";
 
@@ -21,7 +21,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const upload = multer({
     storage: multer.memoryStorage(),
     limits: {
-      fileSize: 10 * 1024 * 1024, // 10MB limit
+      fileSize: 50 * 1024 * 1024, // 50MB limit
     },
     fileFilter: (req, file, cb) => {
       // Allow images and videos
@@ -33,8 +33,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Configure session middleware
+  // Configure session middleware with memory store
+  const MemStore = MemoryStore(session);
+  const sessionStore = new MemStore({
+    checkPeriod: 86400000 // prune expired entries every 24h
+  });
+  
   app.use(session({
+    store: sessionStore,
     secret: process.env.SESSION_SECRET || 'your-secret-key-change-in-production',
     resave: false,
     saveUninitialized: false,
